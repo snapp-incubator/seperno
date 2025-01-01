@@ -1,4 +1,4 @@
-package normalization
+package seperno
 
 import "github.com/snapp-incubator/seperno/internal"
 

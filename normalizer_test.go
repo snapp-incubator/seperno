@@ -1,4 +1,4 @@
-package normalization
+package seperno
 
 import (
 	"testing"

@@ -2,7 +2,7 @@ package seperno
 
 import "github.com/snapp-incubator/seperno/internal"
 
-func NewNormalize(ops ...internal.Options) *internal.Normalize {
+func NewNormalize(ops ...internal.Options) Normalize {
 	opts := internal.DefaultOptions
 	for _, config := range ops {
 		config.Apply(&opts)
@@ -44,4 +44,12 @@ func WithEndsWithEndOfLineChar() internal.Options {
 	return internal.NewFuncWireOption(func(options *internal.NormalizerOptions) {
 		options.EndsWithEndOfLineChar = true
 	})
+}
+
+type Normalize interface {
+	FindHalfSpace(input, halfSpace string) string
+	BasicNormalizer(input string) string
+	VariationSelectorsRemover(input []string) []string
+	BasicNormalizerArray(input []string) []string
+	BasicNormalizerSlice(input []string) []string
 }

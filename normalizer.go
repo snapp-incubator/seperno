@@ -1,4 +1,4 @@
-package main
+package seperno
 
 import (
 	"C"

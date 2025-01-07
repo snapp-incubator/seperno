@@ -1,3 +1,8 @@
 .idea
 
 *.xml
+
+python/build
+python/dist
+python/seperno.egg-info
+python/seperno.*

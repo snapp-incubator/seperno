@@ -1,0 +1,11 @@
+Metadata-Version: 2.1
+Name: seperno
+Version: 1.1.0
+Summary: Python wrapper for Go-based Seperno text normalization
+Author: Sepehr Sohrabpour
+Author-email: sepehrxsohrabpour@gmail.com
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+License-File: LICENSE

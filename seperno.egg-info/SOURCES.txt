@@ -1,0 +1,8 @@
+LICENSE
+setup.py
+seperno/__init__.py
+seperno/seperno.so
+seperno.egg-info/PKG-INFO
+seperno.egg-info/SOURCES.txt
+seperno.egg-info/dependency_links.txt
+seperno.egg-info/top_level.txt

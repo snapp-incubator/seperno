@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"C"
 	"regexp"
 	"strings"
 )

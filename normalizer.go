@@ -1,6 +1,9 @@
-package seperno
+package main
 
-import "github.com/snapp-incubator/seperno/internal"
+import (
+	"C"
+	"github.com/snapp-incubator/seperno/internal"
+)
 
 func NewNormalize(ops ...internal.Options) *internal.Normalize {
 	opts := internal.DefaultOptions

@@ -1,4 +1,4 @@
-package seperno
+package main
 
 import (
 	"testing"

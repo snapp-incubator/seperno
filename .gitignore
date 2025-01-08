@@ -6,3 +6,4 @@ python/build
 python/dist
 python/seperno.egg-info
 python/seperno.*
+python/seperno/seperno.*

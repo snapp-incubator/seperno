@@ -1,0 +1,43 @@
+name: Build and Publish to PyPI
+
+on:
+  push:
+    tags:
+      - '*-python'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Build Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install setuptools wheel cython twine
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22'
+
+      - name: Build Cython Package
+        run: |
+          cd python
+          go build -o export.so -buildmode=c-shared export.go
+          python setup.py build_ext --inplace
+
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          cd python
+          python setup.py sdist bdist_wheel
+          twine upload dist/*

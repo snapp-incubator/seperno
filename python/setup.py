@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="seperno",
-    version="1.1.0",
+    version="1.1.2",
     author="Sepehr Sohrabpour",
     author_email="sepehrxsohrabpour@gmail.com",
     description="Python wrapper for Go-based Seperno text normalization",

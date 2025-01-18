@@ -8,7 +8,7 @@ import (
 
 // Function to tokenize and build a consistent vocabulary
 func buildVocabulary(query string, synonyms []string) map[string]int {
-	vocab := make(map[string]int)
+	vocab := make(map[string]int, 0)
 	index := 0
 
 	// Add query words to the vocabulary

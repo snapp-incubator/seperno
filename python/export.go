@@ -36,6 +36,14 @@ func calculateCosineSimilarity(text []string, list_text [][]string) []float64 {
 	return internal.CalculateCosineSimilarity(text, list_text)
 }
 
+func calculateJaccardSimilarity(text []string, list_text [][]string) []float64 {
+	return internal.CalculateJaccardSimilarity(text, list_text)
+}
+
+func calculateLongestCommonSubsequence(text []string, list_text [][]string) []float64 {
+	return internal.CalculateLongestCommonSubsequence(text, list_text)
+}
+
 // Helper function to convert **C.char to []string in Go
 func cStringArrayToSlice(cArray **C.char, length C.int) []string {
 	goSlice := make([]string, length)
@@ -72,7 +80,38 @@ func CosineSimilarity(input **C.char, list_text ***C.char, inputLen, listLen, li
 	for i, value := range similarities {
 		*((*C.double)(unsafe.Pointer(uintptr(unsafe.Pointer(cSimilarities)) + uintptr(i)*unsafe.Sizeof(C.double(0))))) = C.double(value)
 	}
+	return cSimilarities
+}
 
+//export JaccardSimilarity
+func JaccardSimilarity(input **C.char, list_text ***C.char, inputLen, listLen, listInnerLen C.int) *C.double {
+	// Convert the input C arrays to Go slices
+	goInput := cStringArrayToSlice(input, inputLen)
+	goListText := cStringMatrixToSlice(list_text, listLen, listInnerLen)
+
+	// Perform the cosine similarity calculation
+	similarities := calculateJaccardSimilarity(goInput, goListText)
+	// Convert Go slice of float64 back to *C.double array
+	cSimilarities := (*C.double)(C.malloc(C.size_t(len(similarities)) * C.size_t(unsafe.Sizeof(C.double(0)))))
+	for i, value := range similarities {
+		*((*C.double)(unsafe.Pointer(uintptr(unsafe.Pointer(cSimilarities)) + uintptr(i)*unsafe.Sizeof(C.double(0))))) = C.double(value)
+	}
+	return cSimilarities
+}
+
+//export LongestCommonSubsequence
+func LongestCommonSubsequence(input **C.char, list_text ***C.char, inputLen, listLen, listInnerLen C.int) *C.double {
+	// Convert the input C arrays to Go slices
+	goInput := cStringArrayToSlice(input, inputLen)
+	goListText := cStringMatrixToSlice(list_text, listLen, listInnerLen)
+
+	// Perform the cosine similarity calculation
+	similarities := calculateLongestCommonSubsequence(goInput, goListText)
+	// Convert Go slice of float64 back to *C.double array
+	cSimilarities := (*C.double)(C.malloc(C.size_t(len(similarities)) * C.size_t(unsafe.Sizeof(C.double(0)))))
+	for i, value := range similarities {
+		*((*C.double)(unsafe.Pointer(uintptr(unsafe.Pointer(cSimilarities)) + uintptr(i)*unsafe.Sizeof(C.double(0))))) = C.double(value)
+	}
 	return cSimilarities
 }
 

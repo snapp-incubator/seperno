@@ -53,6 +53,60 @@ def cosine_similarity(text, list_text):
 
     return similarities
 
+seperno.JaccardSimilarity.argtypes = [
+    ctypes.POINTER(ctypes.c_char_p),
+    ctypes.POINTER(ctypes.POINTER(ctypes.c_char_p)),
+    ctypes.c_int, ctypes.c_int, ctypes.c_int
+]
+seperno.JaccardSimilarity.restype = ctypes.POINTER(ctypes.c_double)
+
+def jaccard_similarity(text, list_text):
+    # Convert text to a C array of strings
+    text_c = (ctypes.c_char_p * len(text))(*[t.encode('utf-8') for t in text])
+
+    # Convert list_text to a C array of C arrays of strings
+    list_text_c = (ctypes.POINTER(ctypes.c_char_p) * len(list_text))()
+    for i, lst in enumerate(list_text):
+        inner_array = (ctypes.c_char_p * len(lst))(*[s.encode('utf-8') for s in lst])
+        list_text_c[i] = inner_array
+
+    # Call the Go function
+    similarities_ptr = seperno.JaccardSimilarity(
+        text_c, list_text_c, len(text), len(list_text), len(list_text[0])
+    )
+
+    # Convert the C result array back to a Python list
+    similarities = [similarities_ptr[i] for i in range(len(text))]
+
+    return similarities
+
+seperno.LongestCommonSubsequence.argtypes = [
+    ctypes.POINTER(ctypes.c_char_p),
+    ctypes.POINTER(ctypes.POINTER(ctypes.c_char_p)),
+    ctypes.c_int, ctypes.c_int, ctypes.c_int
+]
+seperno.LongestCommonSubsequence.restype = ctypes.POINTER(ctypes.c_double)
+
+def longest_common_subsequence(text, list_text):
+    # Convert text to a C array of strings
+    text_c = (ctypes.c_char_p * len(text))(*[t.encode('utf-8') for t in text])
+
+    # Convert list_text to a C array of C arrays of strings
+    list_text_c = (ctypes.POINTER(ctypes.c_char_p) * len(list_text))()
+    for i, lst in enumerate(list_text):
+        inner_array = (ctypes.c_char_p * len(lst))(*[s.encode('utf-8') for s in lst])
+        list_text_c[i] = inner_array
+
+    # Call the Go function
+    similarities_ptr = seperno.LongestCommonSubsequence(
+        text_c, list_text_c, len(text), len(list_text), len(list_text[0])
+    )
+
+    # Convert the C result array back to a Python list
+    similarities = [similarities_ptr[i] for i in range(len(text))]
+
+    return similarities
+
 # Example usage
 if __name__ == "__main__":
     result = normalize_text("Hello  World!", convert_half_space=True)

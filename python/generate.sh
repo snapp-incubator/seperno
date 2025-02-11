@@ -1,9 +1,6 @@
 #!/bin/bash
 
-go build -o seperno.so -buildmode=c-shared export.go
-
-mv seperno.so ./seperno/.
-mv seperno.h ./seperno/.
+go build -o seperno/seperno.so -buildmode=c-shared export.go
 
 rm -rf dist
 

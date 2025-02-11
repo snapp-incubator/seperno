@@ -29,8 +29,7 @@ jobs:
 
       - name: Build Python Wheels for All Platforms
         run: |
-          cd python
-          CIBW_BUILD_VERBOSITY=1 python -m cibuildwheel --output-dir dist
+          CIBW_BUILD_VERBOSITY=1 python -m cibuildwheel --output-dir python/dist
 
       - name: Publish to PyPI
         env:

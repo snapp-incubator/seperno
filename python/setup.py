@@ -1,11 +1,10 @@
 import os
 import platform
-from setuptools import setup, find_packages
-from setuptools.command.build_ext import build_ext
-from setuptools.command.install import install
 import subprocess
+from setuptools import setup, find_packages
+from setuptools.command.build_py import build_py
 
-class BuildSharedLibrary(build_ext):
+class BuildSharedLibrary(build_py):
     """ Custom build command to ensure the Go shared library is compiled. """
 
     def run(self):
@@ -22,7 +21,7 @@ class BuildSharedLibrary(build_ext):
         print(f"Running: {go_build_cmds[system]}")
         subprocess.check_call(go_build_cmds[system], shell=True)
 
-        build_ext.run(self)
+        build_py.run(self)
 
 # Detect OS and determine the correct shared library file
 system = platform.system()
@@ -51,5 +50,5 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.6",
-    cmdclass={"build_ext": BuildSharedLibrary},  # Run Go build before packaging
+    cmdclass={"build_py": BuildSharedLibrary},
 )

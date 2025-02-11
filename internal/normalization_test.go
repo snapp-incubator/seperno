@@ -10,6 +10,7 @@ func TestNormalize_BasicNormalizer(t *testing.T) {
 		convertHalfSpaceToSpace bool
 		convertIntToWord        bool
 		spaceCombiner           bool
+		removeSpecialChars      bool
 	}
 	tests := []struct {
 		name string
@@ -99,6 +100,17 @@ func TestNormalize_BasicNormalizer(t *testing.T) {
 			},
 			want: "بیست یک هزار",
 		},
+		{
+			name: "Should replace number with word ۴",
+			args: args{
+				input:                   "20.1000",
+				convertIntToWord:        true,
+				convertHalfSpaceToSpace: true,
+				spaceCombiner:           true,
+				removeSpecialChars:      true,
+			},
+			want: "بیست یک هزار",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -106,6 +118,7 @@ func TestNormalize_BasicNormalizer(t *testing.T) {
 				convertHalfSpaceToSpace: tt.args.convertHalfSpaceToSpace,
 				intToWord:               tt.args.convertIntToWord,
 				spaceCombiner:           tt.args.spaceCombiner,
+				normalizePunctuations:   tt.args.removeSpecialChars,
 			}
 			if got := n.BasicNormalizer(tt.args.input); got != tt.want {
 				t.Errorf("BasicNormalizer() = %v, want %v", got, tt.want)

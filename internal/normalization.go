@@ -102,7 +102,7 @@ func (n Normalize) BasicNormalizer(input string) string {
 	// Convert runes back to a string
 	// Convert the rune slice back to a string, trim spaces, replace null strings, and convert to lowercase
 	s := strings.TrimSpace(string(inputRunes))
-	s = strings.ReplaceAll(s, dot, nullString)
+	//s = strings.ReplaceAll(s, dot, nullString)
 	s = strings.ReplaceAll(s, NewLine, nullString)
 	s = strings.ReplaceAll(s, nullString, emptyString)
 	stringInput := strings.ToLower(s)

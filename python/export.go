@@ -1,4 +1,3 @@
-//nolint:errcheck
 package main
 
 /*
@@ -15,8 +14,8 @@ import (
 //
 //export NormalizeText
 func NormalizeText(input *C.char,
-	convertHalfSpace, combineSpace, removeOuterSpace, removeURL,
-	normalizePunctuations, endWithEOL, intToWord C.bool) *C.char {
+	convertHalfSpace C.bool, combineSpace C.bool, removeOuterSpace C.bool, removeURL C.bool,
+	normalizePunctuations C.bool, endWithEOL C.bool, intToWord C.bool) *C.char {
 	// Directly map C.bool values to Go's bool type for clarity
 	normOptions := options.NormalizerOptions{
 		ConvertHalfSpaceToSpace: bool(convertHalfSpace),

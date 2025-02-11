@@ -1,48 +1,57 @@
 package seperno
 
-import "github.com/snapp-incubator/seperno/internal"
+import (
+	"github.com/snapp-incubator/seperno/internal"
+	"github.com/snapp-incubator/seperno/pkg/options"
+)
 
-func NewNormalize(ops ...internal.Options) Normalize {
-	opts := internal.DefaultOptions
+func NewNormalize(ops ...options.Options) Normalize {
+	opts := options.DefaultOptions
 	for _, config := range ops {
 		config.Apply(&opts)
 	}
 	return internal.NewNormalizer(opts)
 }
 
-func WithConvertHalfSpaceToSpace() internal.Options {
-	return internal.NewFuncWireOption(func(options *internal.NormalizerOptions) {
+func WithConvertHalfSpaceToSpace() options.Options {
+	return options.NewFuncOption(func(options *options.NormalizerOptions) {
 		options.ConvertHalfSpaceToSpace = true
 	})
 }
 
-func WithSpaceCombiner() internal.Options {
-	return internal.NewFuncWireOption(func(options *internal.NormalizerOptions) {
+func WithSpaceCombiner() options.Options {
+	return options.NewFuncOption(func(options *options.NormalizerOptions) {
 		options.SpaceCombiner = true
 	})
 }
 
-func WithOuterSpaceRemover() internal.Options {
-	return internal.NewFuncWireOption(func(options *internal.NormalizerOptions) {
+func WithOuterSpaceRemover() options.Options {
+	return options.NewFuncOption(func(options *options.NormalizerOptions) {
 		options.OuterSpaceRemover = true
 	})
 }
 
-func WithURLRemover() internal.Options {
-	return internal.NewFuncWireOption(func(options *internal.NormalizerOptions) {
+func WithURLRemover() options.Options {
+	return options.NewFuncOption(func(options *options.NormalizerOptions) {
 		options.URLRemover = true
 	})
 }
 
-func WithNormalizePunctuations() internal.Options {
-	return internal.NewFuncWireOption(func(options *internal.NormalizerOptions) {
+func WithNormalizePunctuations() options.Options {
+	return options.NewFuncOption(func(options *options.NormalizerOptions) {
 		options.NormalizePunctuations = true
 	})
 }
 
-func WithEndsWithEndOfLineChar() internal.Options {
-	return internal.NewFuncWireOption(func(options *internal.NormalizerOptions) {
+func WithEndsWithEndOfLineChar() options.Options {
+	return options.NewFuncOption(func(options *options.NormalizerOptions) {
 		options.EndsWithEndOfLineChar = true
+	})
+}
+
+func WithIntToWord() options.Options {
+	return options.NewFuncOption(func(options *options.NormalizerOptions) {
+		options.IntToWord = true
 	})
 }
 

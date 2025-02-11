@@ -3,13 +3,13 @@ package seperno
 import (
 	"testing"
 
-	"github.com/snapp-incubator/seperno/internal"
+	"github.com/snapp-incubator/seperno/pkg/options"
 )
 
 func TestNormalize_BasicNormalizer(t *testing.T) {
 	type args struct {
 		input string
-		ops   []internal.Options
+		ops   []options.Options
 	}
 	tests := []struct {
 		name string
@@ -20,7 +20,7 @@ func TestNormalize_BasicNormalizer(t *testing.T) {
 			name: "should convert half space into space",
 			args: args{
 				input: "آسمان‌آبی",
-				ops:   []internal.Options{WithConvertHalfSpaceToSpace()},
+				ops:   []options.Options{WithConvertHalfSpaceToSpace()},
 			},
 			want: "اسمان ابی",
 		},
@@ -28,7 +28,7 @@ func TestNormalize_BasicNormalizer(t *testing.T) {
 			name: "should remove url and outer spaces",
 			args: args{
 				input: "تست https://example.com",
-				ops:   []internal.Options{WithURLRemover(), WithOuterSpaceRemover()},
+				ops:   []options.Options{WithURLRemover(), WithOuterSpaceRemover()},
 			},
 			want: "تست",
 		},
@@ -36,7 +36,7 @@ func TestNormalize_BasicNormalizer(t *testing.T) {
 			name: "should remove url",
 			args: args{
 				input: "تست https://example.com",
-				ops:   []internal.Options{WithURLRemover()},
+				ops:   []options.Options{WithURLRemover()},
 			},
 			want: "تست ",
 		},
@@ -44,7 +44,7 @@ func TestNormalize_BasicNormalizer(t *testing.T) {
 			name: "should combine spaces",
 			args: args{
 				input: "تست   تست",
-				ops:   []internal.Options{WithSpaceCombiner()},
+				ops:   []options.Options{WithSpaceCombiner()},
 			},
 			want: "تست تست",
 		},
@@ -52,7 +52,7 @@ func TestNormalize_BasicNormalizer(t *testing.T) {
 			name: "should remove end of line character",
 			args: args{
 				input: "تست.",
-				ops:   []internal.Options{WithEndsWithEndOfLineChar()},
+				ops:   []options.Options{WithEndsWithEndOfLineChar()},
 			},
 			want: "تست",
 		},
@@ -60,9 +60,19 @@ func TestNormalize_BasicNormalizer(t *testing.T) {
 			name: "should remove punctuations and replace with space",
 			args: args{
 				input: "سلام,خوبی؟چه خبرا.",
-				ops:   []internal.Options{WithNormalizePunctuations(), WithOuterSpaceRemover()},
+				ops:   []options.Options{WithNormalizePunctuations(), WithOuterSpaceRemover()},
 			},
 			want: "سلام خوبی چه خبرا",
+		},
+		{
+			name: "Should replace number with words",
+			args: args{
+				input: "خیابان ۱۵ خرداد",
+				ops: []options.Options{
+					WithIntToWord(),
+				},
+			},
+			want: "خیابان پانزده خرداد",
 		},
 	}
 	for _, tt := range tests {

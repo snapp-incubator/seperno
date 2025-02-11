@@ -22,6 +22,11 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install setuptools wheel twine
 
+      - name: Install Cross-Compiler for CGO
+        run: |
+          sudo apt update
+          sudo apt install -y gcc-multilib g++-multilib gcc-mingw-w64-x86-64 musl-dev
+
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
@@ -31,18 +36,18 @@ jobs:
         run: |
           cd python
           
-          # Build for Linux
-          CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o seperno/seperno.so -buildmode=c-shared export.go
+          # Build for Linux (use gcc)
+          CC=gcc CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o seperno/seperno.so -buildmode=c-shared export.go
           
-          # Build for macOS
-          CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -o seperno/seperno.dylib -buildmode=c-shared export.go
+          # Build for macOS (use clang)
+          CC=clang CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -o seperno/seperno.dylib -buildmode=c-shared export.go
           
-          # Build for Windows
-          CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -o seperno/seperno.dll -buildmode=c-shared export.go
+          # Build for Windows (use mingw-w64)
+          CC=x86_64-w64-mingw32-gcc CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -o seperno/seperno.dll -buildmode=c-shared export.go
 
       - name: Verify Build Output
         run: |
-          ls -l python/seperno/seperno.so
+          ls -l python/seperno/
 
       - name: Build Python Package
         run: |

@@ -20,44 +20,15 @@ jobs:
       - name: Install Build Dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install setuptools wheel twine
+          python -m pip install setuptools wheel twine cibuildwheel
 
-      - name: Install Cross-Compilers
+      - name: Build Python Wheels for All Platforms
         run: |
-          sudo apt update
-          sudo apt install -y gcc g++ gcc-multilib g++-multilib gcc-mingw-w64-x86-64 musl-dev clang
-
-      - name: Setup Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.22'
-
-      - name: Build Cython Output with Go
-        run: |
-          cd python
-          
-          # Build for Linux (use gcc explicitly)
-          CC=gcc CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o seperno/seperno.so -buildmode=c-shared export.go
-          
-          # Build for macOS (use clang explicitly)
-          CC=clang CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -o seperno/seperno.dylib -buildmode=c-shared export.go
-          
-          # Build for Windows (use mingw-w64)
-          CC=x86_64-w64-mingw32-gcc CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -o seperno/seperno.dll -buildmode=c-shared export.go
-
-      - name: Verify Build Output
-        run: |
-          ls -l python/seperno/
-
-      - name: Build Python Package
-        run: |
-          cd python
-          python setup.py sdist bdist_wheel
+          python -m cibuildwheel --output-dir python/dist
 
       - name: Publish to PyPI
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
-          cd python
-          twine upload dist/*
+          twine upload python/dist/*

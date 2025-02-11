@@ -1,9 +1,8 @@
 import os
-import sys
 import platform
 from setuptools import setup, find_packages
 
-# Determine the correct shared library file for the OS
+# Detect OS to include the right shared library
 system = platform.system()
 if system == "Linux":
     shared_lib = "seperno.so"

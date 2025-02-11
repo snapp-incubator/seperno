@@ -3,17 +3,19 @@ requires = ["cibuildwheel"]
 
 [tool.cibuildwheel]
 environment = { "CGO_ENABLED" = "1" }
+build-frontend = "pip"
 
-# Skip builds for unsupported architectures
+# Force platform-specific wheels (no "py3-none-any.whl")
+manylinux-x86_64-image = "quay.io/pypa/manylinux_2_28_x86_64"
 skip = ["pp*", "*-win32", "*-manylinux_i686"]
-
-[tool.cibuildwheel.linux]
-archs = ["x86_64", "aarch64"]
-before-build = "apt-get update && apt-get install -y gcc musl-dev"
 
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]
 before-build = "brew install llvm"
+
+[tool.cibuildwheel.linux]
+archs = ["x86_64", "aarch64"]
+before-build = "apt-get update && apt-get install -y gcc musl-dev"
 
 [tool.cibuildwheel.windows]
 archs = ["AMD64"]

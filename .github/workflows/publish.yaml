@@ -22,10 +22,15 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install setuptools wheel twine cibuildwheel
 
+      - name: Install Cross-Compilers
+        run: |
+          sudo apt update
+          sudo apt install -y gcc g++ gcc-multilib g++-multilib gcc-mingw-w64-x86-64 musl-dev clang
+
       - name: Build Python Wheels for All Platforms
         run: |
           cd python
-          python -m cibuildwheel --output-dir python/dist
+          CIBW_BUILD_VERBOSITY=1 python -m cibuildwheel --output-dir dist
 
       - name: Publish to PyPI
         env:

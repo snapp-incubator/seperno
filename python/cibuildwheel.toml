@@ -11,21 +11,14 @@ archs = ["x86_64", "aarch64"]
 manylinux-x86_64-image = "quay.io/pypa/manylinux_2_28_x86_64"
 before-all = """
     yum install -y gcc mingw-w64
-    curl -sSL https://go.dev/dl/go1.22.linux-amd64.tar.gz | tar -xz -C /usr/local
-    export PATH=$PATH:/usr/local/go/bin
 """
 
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]
 before-build = """
-    brew install go
-    export PATH=$PATH:/usr/local/go/bin
+    brew install llvm  # For macOS cross-compilation
 """
 
 [tool.cibuildwheel.windows]
 archs = ["AMD64"]
-before-build = """
-    choco install mingw -y
-    choco install golang -y
-    refreshenv
-"""
+before-build = "choco install mingw -y"

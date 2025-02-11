@@ -27,12 +27,18 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: "1.22"
-        env:
-          GOROOT: /usr/local/go
+          # Remove explicit GOROOT - let the action handle it
+
+      - name: Verify Go Installation
+        run: |
+          go version
+          echo "GOROOT=$(go env GOROOT)"
+          echo "PATH=$PATH"
 
       - name: Build Wheels
         run: |
           cd python
+          export PATH=$PATH:$(go env GOPATH)/bin
           CIBW_BUILD_VERBOSITY=1 python -m cibuildwheel --output-dir dist
 
       - name: Publish to PyPI

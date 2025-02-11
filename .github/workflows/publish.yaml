@@ -30,12 +30,17 @@ jobs:
       - name: Build Cython Output with Go
         run: |
           cd python
-          set GOARCH=amd64
-          set GOOS=linux
+          
+          # Build for Linux
+          export GOOS=linux GOARCH=amd64
           go build -o seperno/seperno.so -buildmode=c-shared export.go
-          set GOOS=darwin
+          
+          # Build for macOS
+          export GOOS=darwin GOARCH=amd64
           go build -o seperno/seperno.dylib -buildmode=c-shared export.go
-          set GOOS=windows
+          
+          # Build for Windows
+          export GOOS=windows GOARCH=amd64
           go build -o seperno/seperno.dll -buildmode=c-shared export.go
 
       - name: Verify Build Output

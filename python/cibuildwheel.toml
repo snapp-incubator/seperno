@@ -1,23 +1,23 @@
-[build-system]
-requires = ["cibuildwheel"]
-
 [tool.cibuildwheel]
-environment = { "CGO_ENABLED" = "1", "PATH" = "/usr/local/go/bin:$PATH" }
+environment = { "CGO_ENABLED" = "1" }
 build-frontend = "pip"
 skip = ["pp*", "*-win32", "*-manylinux_i686"]
-manylinux-x86_64-image = "quay.io/pypa/manylinux_2_28_x86_64"
 
 [tool.cibuildwheel.linux]
 archs = ["x86_64", "aarch64"]
-before-all = "yum install -y gcc && \
-               curl -sSL https://golang.org/dl/go1.18.linux-amd64.tar.gz -o go.tar.gz && \
-               tar -C /usr/local -xzf go.tar.gz && \
-               go version"
+environment = { "GOOS" = "linux", "GOARCH" = "amd64" }
+before-all = """
+    yum install -y gcc mingw64-gcc
+    curl -sSL https://go.dev/dl/go1.22.linux-amd64.tar.gz | tar -xz -C /usr/local
+    export PATH=$PATH:/usr/local/go/bin
+"""
 
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]
-before-build = "brew install llvm"
+environment = { "GOOS" = "darwin", "GOARCH" = "arm64" }
+before-build = "brew install go"
 
 [tool.cibuildwheel.windows]
 archs = ["AMD64"]
-before-build = "choco install mingw"
+environment = { "GOOS" = "windows", "GOARCH" = "amd64" }
+before-build = "choco install mingw -y"

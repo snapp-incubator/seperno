@@ -9,33 +9,30 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      - name: Install Build Dependencies
+      - name: Install Dependencies
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install setuptools wheel twine cibuildwheel
-
-      - name: Install Cross-Compilers
-        run: |
-          sudo apt update
-          sudo apt install -y gcc g++ gcc-multilib g++-multilib gcc-mingw-w64-x86-64 musl-dev clang
+          sudo apt-get update
+          sudo apt-get install -y gcc mingw-w64
+          python -m pip install cibuildwheel
 
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
           go-version: '1.22'
 
-      - name: Build Python Wheels for All Platforms
+      - name: Build Wheels
         run: |
           cd python
-          CIBW_BUILD_VERBOSITY=1 python -m cibuildwheel --output-dir python/dist
+          cibuildwheel --platform linux --arch x86_64
+          cibuildwheel --platform windows --arch AMD64
+          cibuildwheel --platform macos --arch arm64
 
       - name: Publish to PyPI
         env:

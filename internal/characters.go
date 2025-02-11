@@ -38,7 +38,7 @@ const (
 	enD8 = '\u0038'
 	enD9 = '\u0039'
 
-	//combining characters
+	// combining characters
 	tilde                      rune = 771  // COMBINING tilde
 	leftHalfRingBelow          rune = 796  // COMBINING left half ring below
 	dotBelow                   rune = 803  // COMBINING dot below
@@ -108,15 +108,15 @@ const (
 	arabicSmallYeh      rune = 1766
 	arabicSubscriptAlef rune = 1622 // Arabic Subscript Alef
 
-	//Hamzeh
-	persianHamza rune = 1569 //ARABIC LET­TER HAMZA
+	// Hamzeh
+	persianHamza rune = 1569 // ARABIC LET­TER HAMZA
 
-	//Arabic Yeh
+	// Arabic Yeh
 	arabicYehWithThreeDotsAbove = '\u063F'
 	arabicYehWithInvertedV      = '\u063D'
 	rtl                         = '\u200F'
 	ltr                         = '\u200E'
-	cc                          = '\uFFFF' //Convert Characters: replace all non-ASCII characters in the file with an escape sequence in the form of \uFFFF
+	cc                          = '\uFFFF' // Convert Characters: replace all non-ASCII characters in the file with an escape sequence in the form of \uFFFF
 
 	// Spaces and Special Characters
 	spaceZeroWidthNonJoiner = '\u200c'
@@ -178,7 +178,7 @@ var basicCharacters = []rune{
 	'ژ',  // Jeh
 	'گ',  // Gaf
 	'ب',  // Beh
-	'ت',  // Teh
+	'ت',  // Te
 	'ث',  // Theh
 	'ج',  // Jeem
 	'ح',  // Hah

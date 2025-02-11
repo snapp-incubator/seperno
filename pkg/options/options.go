@@ -1,4 +1,4 @@
-package internal
+package options
 
 var DefaultOptions = NormalizerOptions{
 	ConvertHalfSpaceToSpace: false,
@@ -7,6 +7,7 @@ var DefaultOptions = NormalizerOptions{
 	SpaceCombiner:           false,
 	NormalizePunctuations:   false,
 	EndsWithEndOfLineChar:   false,
+	IntToWord:               false,
 }
 
 type NormalizerOptions struct {
@@ -16,6 +17,7 @@ type NormalizerOptions struct {
 	SpaceCombiner           bool
 	NormalizePunctuations   bool
 	EndsWithEndOfLineChar   bool
+	IntToWord               bool
 }
 
 type Options interface {
@@ -30,6 +32,6 @@ func (w FuncConfig) Apply(conf *NormalizerOptions) {
 	w.ops(conf)
 }
 
-func NewFuncWireOption(f func(options *NormalizerOptions)) *FuncConfig {
+func NewFuncOption(f func(options *NormalizerOptions)) *FuncConfig {
 	return &FuncConfig{ops: f}
 }

@@ -25,7 +25,7 @@ jobs:
       - name: Install Cross-Compilers
         run: |
           sudo apt update
-          sudo apt install -y gcc g++ gcc-multilib g++-multilib gcc-mingw-w64-x86-64 musl-dev
+          sudo apt install -y gcc g++ gcc-multilib g++-multilib gcc-mingw-w64-x86-64 musl-dev clang
 
       - name: Setup Go
         uses: actions/setup-go@v4
@@ -40,7 +40,7 @@ jobs:
           CC=gcc CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o seperno/seperno.so -buildmode=c-shared export.go
           
           # Build for macOS (use clang explicitly)
-          CC=o64-clang CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -o seperno/seperno.dylib -buildmode=c-shared export.go
+          CC=clang CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -o seperno/seperno.dylib -buildmode=c-shared export.go
           
           # Build for Windows (use mingw-w64)
           CC=x86_64-w64-mingw32-gcc CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -o seperno/seperno.dll -buildmode=c-shared export.go

@@ -24,6 +24,7 @@ jobs:
 
       - name: Build Python Wheels for All Platforms
         run: |
+          cd python
           python -m cibuildwheel --output-dir python/dist
 
       - name: Publish to PyPI

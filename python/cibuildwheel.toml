@@ -7,7 +7,7 @@ skip = ["pp*", "*-win32", "*-manylinux_i686"]
 archs = ["x86_64", "aarch64"]
 environment = { "GOOS" = "linux", "GOARCH" = "amd64" }
 before-all = """
-    yum install -y gcc mingw64-gcc
+    yum install -y gcc mingw-w64
     curl -sSL https://go.dev/dl/go1.22.linux-amd64.tar.gz | tar -xz -C /usr/local
     export PATH=$PATH:/usr/local/go/bin
 """

@@ -2,7 +2,7 @@ import sys
 import ctypes
 import os
 
-# Determine the shared library extension based on the OS
+# Determine shared library extension
 system = sys.platform
 if system == "linux":
     lib_ext = "so"

@@ -9,10 +9,15 @@ class BuildSharedLibrary(build_py):
 
     def run(self):
         system = platform.system()
+        project_root = os.path.abspath(os.path.dirname(__file__))  # Get root path
+        python_dir = os.path.join(project_root, "python")  # Path to Python package
+        export_go_path = os.path.join(python_dir, "export.go")  # Path to export.go
+
+        # Ensure we run go build from the project root
         go_build_cmds = {
-            "Linux": "CC=gcc CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o seperno/seperno.so -buildmode=c-shared export.go",
-            "Darwin": "CC=clang CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -o seperno/seperno.dylib -buildmode=c-shared export.go",
-            "Windows": "CC=x86_64-w64-mingw32-gcc CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -o seperno/seperno.dll -buildmode=c-shared export.go",
+            "Linux": f"cd {project_root} && CC=gcc CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o python/seperno/seperno.so -buildmode=c-shared {export_go_path}",
+            "Darwin": f"cd {project_root} && CC=clang CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -o python/seperno/seperno.dylib -buildmode=c-shared {export_go_path}",
+            "Windows": f"cd {project_root} && CC=x86_64-w64-mingw32-gcc CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -o python/seperno/seperno.dll -buildmode=c-shared {export_go_path}",
         }
 
         if system not in go_build_cmds:
@@ -41,7 +46,8 @@ setup(
     author="Sepehr Sohrabpour",
     author_email="sepehrxsohrabpour@gmail.com",
     description="Python wrapper for Go-based Seperno text normalization",
-    packages=find_packages(),
+    packages=find_packages(where="python"),
+    package_dir={"": "python"},
     package_data={"seperno": [shared_lib]},  # Ensure shared library is included
     include_package_data=True,  # Include shared library in the package
     classifiers=[
@@ -50,5 +56,5 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.6",
-    cmdclass={"build_py": BuildSharedLibrary},
+    cmdclass={"build_py": BuildSharedLibrary},  # Run Go build before packaging
 )

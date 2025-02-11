@@ -23,11 +23,10 @@ jobs:
           sudo apt-get install -y gcc g++ gcc-mingw-w64-x86-64
           python -m pip install cibuildwheel
 
-      - name: Setup Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: "1.22"
-          # Remove explicit GOROOT - let the action handle it
+      - name: Build Wheels
+        run: |
+          cd python
+          CIBW_BUILD_VERBOSITY=1 python -m cibuildwheel --output-dir dist
 
       - name: Verify Go Installation
         run: |

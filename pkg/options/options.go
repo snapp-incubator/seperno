@@ -8,7 +8,16 @@ var DefaultOptions = NormalizerOptions{
 	NormalizePunctuations:   false,
 	EndsWithEndOfLineChar:   false,
 	IntToWord:               false,
+	ConvertNumberLang:       LanguageEn,
 }
+
+type Language string
+
+const (
+	LanguageFa Language = "fa"
+	LanguageAr Language = "ar"
+	LanguageEn Language = "en"
+)
 
 type NormalizerOptions struct {
 	ConvertHalfSpaceToSpace bool
@@ -18,6 +27,7 @@ type NormalizerOptions struct {
 	NormalizePunctuations   bool
 	EndsWithEndOfLineChar   bool
 	IntToWord               bool
+	ConvertNumberLang       Language
 }
 
 type Options interface {

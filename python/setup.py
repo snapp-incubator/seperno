@@ -9,14 +9,28 @@ class BuildSharedLibrary(build_py):
         goos = os.environ.get("GOOS", "linux")
         goarch = os.environ.get("GOARCH", "amd64")
 
-        # CORRECTED: Path to project root (setup.py is in "python" directory)
+        # CORRECTED: Path calculation (setup.py is in "python" dir)
         project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         export_go_path = os.path.join(project_root, "python", "export.go")
         output_dir = os.path.join(project_root, "python", "seperno")
 
-        # Fix: Use project_root instead of "/"
+        # Create output directory if needed
+        os.makedirs(output_dir, exist_ok=True)
+
+        # Set compiler and extension
+        if goos == "windows":
+            cc = "x86_64-w64-mingw32-gcc"
+            ext = "dll"
+        elif goos == "darwin":
+            cc = "clang"
+            ext = "dylib"
+        else:
+            cc = "gcc"
+            ext = "so"
+
+        # CORRECTED: Build command (uses project_root, not "/")
         cmd = (
-            f"cd {project_root} && "  # <-- KEY FIX HERE
+            f"cd {project_root} && "  # <-- Critical fix here
             f"CC={cc} "
             f"CGO_ENABLED=1 "
             f"GOOS={goos} "
@@ -24,6 +38,10 @@ class BuildSharedLibrary(build_py):
             f"go build -o {output_dir}/seperno.{ext} "
             f"-buildmode=c-shared {export_go_path}"
         )
+
+        print(f"Running Go build command: {cmd}")
+        subprocess.check_call(cmd, shell=True)
+        super().run()
 
 class bdist_wheel(_bdist_wheel):
     """Mark wheel as platform-specific."""

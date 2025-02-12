@@ -10,10 +10,10 @@ skip = ["pp*", "*-win32", "*-manylinux_i686"]
 archs = ["x86_64", "aarch64"]
 manylinux-x86_64-image = "quay.io/pypa/manylinux_2_28_x86_64"
 before-all = """
-    # Install Go inside the manylinux container
+    # Install Go in the manylinux container
     curl -sSL https://go.dev/dl/go1.22.linux-amd64.tar.gz | tar -xz -C /usr/local
     export PATH=$PATH:/usr/local/go/bin
-    # Verify Go
+    # Verify installation
     go version
 """
 
@@ -22,7 +22,7 @@ archs = ["x86_64", "arm64"]
 before-build = """
     # Install Go on macOS
     brew install go
-    export PATH=$PATH:/usr/local/go/bin
+    export PATH=$PATH:/usr/local/opt/go/libexec/bin
     go version
 """
 

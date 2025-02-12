@@ -26,7 +26,10 @@ jobs:
       - name: Build Wheels
         run: |
           cd python
-          CIBW_BUILD_VERBOSITY=1 python -m cibuildwheel --output-dir dist
+          # Force rebuild of dependencies
+          CIBW_ENVIRONMENT="CGO_ENABLED=1"
+          CIBW_BEFORE_ALL_LINUX="yum install -y gcc && curl -sSL https://go.dev/dl/go1.22.linux-amd64.tar.gz | tar -xz -C /usr/local"
+          python -m cibuildwheel --platform linux --arch x86_64 --output-dir dist
 
       - name: Verify Go Installation
         run: |
@@ -38,6 +41,7 @@ jobs:
         run: |
           cd python
           export PATH=$PATH:$(go env GOPATH)/bin
+          go version
           CIBW_BUILD_VERBOSITY=1 python -m cibuildwheel --output-dir dist
 
       - name: Publish to PyPI

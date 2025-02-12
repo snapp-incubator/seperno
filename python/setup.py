@@ -1,3 +1,4 @@
+import os
 import platform
 from setuptools import setup, find_packages
 
@@ -10,9 +11,13 @@ elif system == "Darwin":  # macOS
 else:
     raise RuntimeError(f"Unsupported platform: {system}")
 
+# Ensure the shared library exists
+if not os.path.exists(lib_path):
+    raise RuntimeError(f"Shared library not found: {lib_path}")
+
 setup(
     name="seperno",
-    version="1.1.7",
+    version="0.0.7",
     author="Sepehr Sohrabpour",
     author_email="sepehrxsohrabpour@gmail.com",
     description="Python wrapper for Go-based Seperno text normalization",

@@ -1,21 +1,23 @@
-import sys
-import ctypes
 import os
+import platform
+import ctypes
 
-# Determine shared library extension based on OS
-system = sys.platform
-if system == "linux":
-    lib_ext = "so"
-elif system == "darwin":
-    lib_ext = "dylib"
-elif system == "win32":
-    lib_ext = "dll"
+# Determine the shared library path based on the platform
+system = platform.system()
+if system == "Linux":
+    lib_name = "seperno.so"
+    lib_path = os.path.join(os.path.dirname(__file__), "linux", lib_name)
+elif system == "Darwin":  # macOS
+    lib_name = "seperno.dylib"
+    lib_path = os.path.join(os.path.dirname(__file__), "macos", lib_name)
 else:
-    raise OSError(f"Unsupported platform: {system}")
+    raise RuntimeError(f"Unsupported platform: {system}")
 
-_lib_name = f"seperno.{lib_ext}"
-_lib_path = os.path.join(os.path.dirname(__file__), _lib_name)
-seperno = ctypes.CDLL(_lib_path)
+# Load the shared library
+if not os.path.exists(lib_path):
+    raise RuntimeError(f"Shared library not found: {lib_path}")
+
+seperno = ctypes.CDLL(lib_path)
 
 # Define argument types for NormalizeText
 seperno.NormalizeText.argtypes = [

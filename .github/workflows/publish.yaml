@@ -52,7 +52,7 @@ jobs:
           CC: ${{ matrix.cc }}
         run: |
           cd python
-          python setup.py build_py
+          python setup.py build_py --goos=${{ matrix.goos }} --goarch=${{ matrix.goarch }} --cc=${{ matrix.cc }}
 
       - name: Build wheel
         run: |

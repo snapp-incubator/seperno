@@ -3,6 +3,31 @@ import subprocess
 from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py
 from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+import sys
+import os
+
+goos_arg = None
+goarch_arg = None
+cc_arg = None
+new_argv = []
+
+for arg in sys.argv:
+    if arg.startswith("--goos="):
+        goos_arg = arg.split("=")[1]
+    elif arg.startswith("--goarch="):
+        goarch_arg = arg.split("=")[1]
+    elif arg.startswith("--cc="):
+        cc_arg = arg.split("=")[1]
+    else:
+        new_argv.append(arg)
+sys.argv = new_argv
+
+if goos_arg:
+    os.environ["GOOS"] = goos_arg
+if goarch_arg:
+    os.environ["GOARCH"] = goarch_arg
+if cc_arg:
+    os.environ["CC"] = cc_arg
 
 class BuildSharedLibrary(build_py):
     def run(self):

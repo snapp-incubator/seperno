@@ -16,12 +16,15 @@ jobs:
           - os: ubuntu-latest
             goos: linux
             ext: so
+            cc: gcc
           - os: macos-latest
             goos: darwin
             ext: dylib
+            cc: clang
           - os: windows-latest
             goos: windows
             ext: dll
+            cc: x86_64-w64-mingw32-gcc
 
     steps:
       - name: Checkout code
@@ -46,6 +49,7 @@ jobs:
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
+          CC: ${{ matrix.cc }}
         run: |
           cd python
           python setup.py build_py

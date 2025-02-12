@@ -16,6 +16,7 @@ type Normalize struct {
 	normalizePunctuations   bool
 	endsWithEndOfLineChar   bool
 	intToWord               bool
+	convertNumberLang       string
 }
 
 func NewNormalizer(conf options.NormalizerOptions) *Normalize {
@@ -27,6 +28,7 @@ func NewNormalizer(conf options.NormalizerOptions) *Normalize {
 		normalizePunctuations:   conf.NormalizePunctuations,
 		endsWithEndOfLineChar:   conf.EndsWithEndOfLineChar,
 		intToWord:               conf.IntToWord,
+		convertNumberLang:       string(conf.ConvertNumberLang),
 	}
 }
 
@@ -307,68 +309,46 @@ func (n Normalize) normalizeCharacters(input string) []rune {
 
 		// Normalize Persian and other numeral variations to English numerals break
 		// Persian 0 and Thai 0 (๐)
-		case faD0, 3664:
-			inputRunes[i] = enD0
+		case faD0, arD0, enD0, 3664:
+			inputRunes[i] = convertToDestNumber(enD0, n.convertNumberLang)
 
 		// Persian 1, Thai 1 (๑), superscript 1 (¹), subscript 1 (₁), full-width 1, and others
-		case faD1, 3665, 185, 8321, 65297, 3793:
-			inputRunes[i] = enD1
+		case faD1, arD1, enD1, 3665, 185, 8321, 65297, 3793:
+			inputRunes[i] = convertToDestNumber(enD1, n.convertNumberLang)
 
 		// Persian 2, subscript 2 (₂), superscript 2 (²), full-width 2, and others
-		case faD2, 8322, 178, 2536, 3666, 1399, 65298:
-			inputRunes[i] = enD2
+		case faD2, arD2, enD2, 8322, 178, 2536, 3666, 1399, 65298:
+			inputRunes[i] = convertToDestNumber(enD2, n.convertNumberLang)
 
 		// Normalize Persian and other numeral variations to English numerals break
 		// Persian 3, Thai 3 (๓), and others
-		case faD3, 3667, 2537, 65299:
-			inputRunes[i] = enD3
+		case faD3, arD3, enD3, 3667, 2537, 65299:
+			inputRunes[i] = convertToDestNumber(enD3, n.convertNumberLang)
 
 		// Persian 4, Thai 4 (๔), superscript 4 (⁴), and others
-		case faD4, 3668, 8308, 3178, 65300:
-			inputRunes[i] = enD4
+		case faD4, arD4, enD4, 3668, 8308, 3178, 65300:
+			inputRunes[i] = convertToDestNumber(enD4, n.convertNumberLang)
 
 		// Persian 5, full-width 5 (５)
-		case faD5, 65301:
-			inputRunes[i] = enD5
+		case faD5, arD5, enD5, 65301:
+			inputRunes[i] = convertToDestNumber(enD5, n.convertNumberLang)
 
 		// Persian 6, Thai 6 (๖)
-		case faD6, 3670:
-			inputRunes[i] = enD6
+		case faD6, arD6, enD6, 3670:
+			inputRunes[i] = convertToDestNumber(enD6, n.convertNumberLang)
 
 		// Normalize Persian and other numeral variations to English numerals break
 		// Persian 7, Devanagari 7 (७), Thai 7 (๗), and others
-		case faD7, 2925, 2797, 2669, 2413, 3671:
-			inputRunes[i] = enD7
+		case faD7, arD7, enD7, 2925, 2797, 2669, 2413, 3671:
+			inputRunes[i] = convertToDestNumber(enD7, n.convertNumberLang)
 
 		// Persian 8, subscript 8 (₈)
-		case faD8, 8328:
-			inputRunes[i] = enD8
+		case faD8, arD8, enD8, 8328:
+			inputRunes[i] = convertToDestNumber(enD8, n.convertNumberLang)
 
 		// Persian 9, and other numeral variations
-		case faD9, 3881, 2543, 6121:
-			inputRunes[i] = enD9
-
-		// Normalize Arabic numerals to English numerals break
-		case arD0:
-			inputRunes[i] = enD0
-		case arD1:
-			inputRunes[i] = enD1
-		case arD2:
-			inputRunes[i] = enD2
-		case arD3:
-			inputRunes[i] = enD3
-		case arD4:
-			inputRunes[i] = enD4
-		case arD5:
-			inputRunes[i] = enD5
-		case arD6:
-			inputRunes[i] = enD6
-		case arD7:
-			inputRunes[i] = enD7
-		case arD8:
-			inputRunes[i] = enD8
-		case arD9:
-			inputRunes[i] = enD9
+		case faD9, arD9, enD9, 3881, 2543, 6121:
+			inputRunes[i] = convertToDestNumber(enD9, n.convertNumberLang)
 
 		// Replace punctuation marks with Persian equivalentsbreak
 		case '?':

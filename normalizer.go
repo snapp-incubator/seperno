@@ -14,44 +14,53 @@ func NewNormalize(ops ...options.Options) Normalize {
 }
 
 func WithConvertHalfSpaceToSpace() options.Options {
-	return options.NewFuncOption(func(options *options.NormalizerOptions) {
-		options.ConvertHalfSpaceToSpace = true
+	return options.NewFuncOption(func(option *options.NormalizerOptions) {
+		option.ConvertHalfSpaceToSpace = true
 	})
 }
 
 func WithSpaceCombiner() options.Options {
-	return options.NewFuncOption(func(options *options.NormalizerOptions) {
-		options.SpaceCombiner = true
+	return options.NewFuncOption(func(option *options.NormalizerOptions) {
+		option.SpaceCombiner = true
 	})
 }
 
 func WithOuterSpaceRemover() options.Options {
-	return options.NewFuncOption(func(options *options.NormalizerOptions) {
-		options.OuterSpaceRemover = true
+	return options.NewFuncOption(func(option *options.NormalizerOptions) {
+		option.OuterSpaceRemover = true
 	})
 }
 
 func WithURLRemover() options.Options {
-	return options.NewFuncOption(func(options *options.NormalizerOptions) {
-		options.URLRemover = true
+	return options.NewFuncOption(func(option *options.NormalizerOptions) {
+		option.URLRemover = true
 	})
 }
 
 func WithNormalizePunctuations() options.Options {
-	return options.NewFuncOption(func(options *options.NormalizerOptions) {
-		options.NormalizePunctuations = true
+	return options.NewFuncOption(func(option *options.NormalizerOptions) {
+		option.NormalizePunctuations = true
 	})
 }
 
 func WithEndsWithEndOfLineChar() options.Options {
-	return options.NewFuncOption(func(options *options.NormalizerOptions) {
-		options.EndsWithEndOfLineChar = true
+	return options.NewFuncOption(func(option *options.NormalizerOptions) {
+		option.EndsWithEndOfLineChar = true
 	})
 }
 
+// WithIntToWord do not use WithConvertNumberToLanguage after use this option
 func WithIntToWord() options.Options {
+	return options.NewFuncOption(func(option *options.NormalizerOptions) {
+		option.IntToWord = true
+		option.ConvertNumberLang = options.LanguageEn
+	})
+}
+
+// WithConvertNumberToLanguage default language is "en" , options are : "en" , "fa" , "ar"
+func WithConvertNumberToLanguage(language options.Language) options.Options {
 	return options.NewFuncOption(func(options *options.NormalizerOptions) {
-		options.IntToWord = true
+		options.ConvertNumberLang = language
 	})
 }
 

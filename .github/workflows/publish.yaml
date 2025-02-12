@@ -10,22 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        goarch: [amd64]
-        include:
-          - os: ubuntu-latest
-            goos: linux
-            ext: so
-            cc: gcc
-          - os: macos-latest
-            goos: darwin
-            ext: dylib
-            cc: clang
-          - os: windows-latest
-            goos: windows
-            ext: dll
-            cc: x86_64-w64-mingw32-gcc
-
+        os: [ubuntu-latest, macos-latest]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -33,37 +18,36 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.22'  # Specify the Go version you need
+          go-version: "1.22"
+
+      - name: Build Go shared library
+        run: |
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
+            go build -o your_package_name/libyourlibrary.so -buildmode=c-shared your_package_name/main.go
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            go build -o your_package_name/libyourlibrary.dylib -buildmode=c-shared your_package_name/main.go
+          fi
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install setuptools wheel
+          pip install setuptools wheel twine
 
-      - name: Build shared library
-        env:
-          GOOS: ${{ matrix.goos }}
-          GOARCH: ${{ matrix.goarch }}
-          CC: ${{ matrix.cc }}
+      - name: Build Python package
         run: |
           cd python
-          python setup.py build_py --goos=${{ matrix.goos }} --goarch=${{ matrix.goarch }} --cc=${{ matrix.cc }}
+          python setup.py sdist bdist_wheel
 
-      - name: Build wheel
-        run: |
-          cd python
-          python setup.py bdist_wheel
-
-      - name: Store artifacts
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: seperno-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: python/dist/
+          name: dist-${{ runner.os }}
+          path: dist
 
   publish:
     needs: build
@@ -73,15 +57,21 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          path: python/dist/
-          name: seperno
-          pattern: seperno-*
+          path: python/dist
+          name: dist
+          pattern: dist-*
           merge-multiple: true
+
+      - name: Combine artifacts
+        run: |
+          mkdir -p combined_dist
+          cp -r dist-ubuntu-latest/* combined_dist/
+          cp -r dist-macos-latest/* combined_dist/
 
       - name: Publish to PyPI
         env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
           pip install twine
-          twine upload python/dist/*
+          twine upload combined_dist/*

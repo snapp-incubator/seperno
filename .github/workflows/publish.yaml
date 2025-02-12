@@ -24,9 +24,11 @@ jobs:
         run: |
           cd python
           if [[ "$RUNNER_OS" == "Linux" ]]; then
-            go build -o seperno/seperno.so -buildmode=c-shared export.go
+            mkdir -p seperno/linux
+            go build -o seperno/linux/seperno.so -buildmode=c-shared export.go
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            go build -o seperno/seperno.dylib -buildmode=c-shared export.go
+            mkdir -p seperno/macos
+            go build -o seperno/macos/seperno.dylib -buildmode=c-shared export.go
           fi
 
       - name: Set up Python
@@ -58,9 +60,9 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          path: combined_dist  # Download artifacts into this folder
-          pattern: dist-*  # Match all artifacts starting with "dist-"
-          merge-multiple: true  # Merge artifacts from multiple runs
+          path: combined_dist
+          pattern: dist-*
+          merge-multiple: true
 
       - name: Publish to PyPI
         env:

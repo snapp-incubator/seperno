@@ -1,24 +1,24 @@
 import platform
 from setuptools import setup, find_packages
 
-# Determine the shared library extension based on the platform
+# Determine the shared library path based on the platform
 system = platform.system()
 if system == "Linux":
-    lib_extension = ".so"
+    lib_path = "seperno/linux/seperno.so"
 elif system == "Darwin":  # macOS
-    lib_extension = ".dylib"
+    lib_path = "seperno/macos/seperno.dylib"
 else:
     raise RuntimeError(f"Unsupported platform: {system}")
 
 setup(
     name="seperno",
-    version="1.1.6",
+    version="1.1.7",
     author="Sepehr Sohrabpour",
     author_email="sepehrxsohrabpour@gmail.com",
     description="Python wrapper for Go-based Seperno text normalization",
     packages=find_packages(),
     package_data={
-        "seperno": [f"*{lib_extension}"],
+        "seperno": [lib_path],  # Include the correct shared library
     },
     include_package_data=True,
     classifiers=[

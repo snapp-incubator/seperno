@@ -56,7 +56,7 @@ jobs:
           python setup.py bdist_wheel
 
       - name: Store artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: seperno-${{ matrix.goos }}-${{ matrix.goarch }}
           path: python/dist/
@@ -67,9 +67,12 @@ jobs:
 
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: python/dist/
+          name: seperno
+          pattern: seperno-*
+          merge-multiple: true
 
       - name: Publish to PyPI
         env:

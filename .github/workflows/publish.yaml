@@ -58,16 +58,9 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          path: python/dist
-          name: dist
-          pattern: dist-*
-          merge-multiple: true
-
-      - name: Combine artifacts
-        run: |
-          mkdir -p combined_dist
-          cp -r dist-ubuntu-latest/* combined_dist/
-          cp -r dist-macos-latest/* combined_dist/
+          path: combined_dist  # Download artifacts into this folder
+          pattern: dist-*  # Match all artifacts starting with "dist-"
+          merge-multiple: true  # Merge artifacts from multiple runs
 
       - name: Publish to PyPI
         env:

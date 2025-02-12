@@ -7,46 +7,74 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        goarch: [amd64]
+        include:
+          - os: ubuntu-latest
+            goos: linux
+            ext: so
+          - os: macos-latest
+            goos: darwin
+            ext: dylib
+          - os: windows-latest
+            goos: windows
+            ext: dll
+
     steps:
-      - name: Checkout Repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22'  # Specify the Go version you need
+
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
 
-      - name: Install Build Dependencies
+      - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc g++ gcc-mingw-w64-x86-64
-          python -m pip install cibuildwheel
+          python -m pip install --upgrade pip
+          pip install setuptools wheel
 
-      - name: Build Wheels
+      - name: Build shared library
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
         run: |
           cd python
-          # Force rebuild of dependencies
-          CIBW_ENVIRONMENT="CGO_ENABLED=1"
-          CIBW_BEFORE_ALL_LINUX="yum install -y gcc && curl -sSL https://go.dev/dl/go1.22.linux-amd64.tar.gz | tar -xz -C /usr/local"
-          python -m cibuildwheel --platform linux --arch x86_64 --output-dir dist
+          python setup.py build_py
 
-      - name: Verify Go Installation
-        run: |
-          go version
-          echo "GOROOT=$(go env GOROOT)"
-          echo "PATH=$PATH"
-
-      - name: Build Wheels
+      - name: Build wheel
         run: |
           cd python
-          export PATH=$PATH:$(go env GOPATH)/bin
-          go version
-          CIBW_BUILD_VERBOSITY=1 python -m cibuildwheel --output-dir dist
+          python setup.py bdist_wheel
+
+      - name: Store artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: seperno-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: python/dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: python/dist/
 
       - name: Publish to PyPI
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
+          pip install twine
           twine upload python/dist/*

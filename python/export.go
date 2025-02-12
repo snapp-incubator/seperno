@@ -12,7 +12,7 @@ import (
 // Exported normalization function using C.bool
 //
 //export NormalizeText
-func NormalizeText(input *C.char, convertHalfSpace C.bool, combineSpace C.bool, removeOuterSpace C.bool, removeURL C.bool, normalizePunctuations C.bool, endWithEOL C.bool, intToWord C.bool) *C.char {
+func NormalizeText(input *C.char, convertHalfSpace C.bool, combineSpace C.bool, removeOuterSpace C.bool, removeURL C.bool, normalizePunctuations C.bool, endWithEOL C.bool, intToWord C.bool, language *C.char) *C.char {
 	// Directly map C.bool values to Go's bool type for clarity
 	normOptions := options.NormalizerOptions{
 		ConvertHalfSpaceToSpace: bool(convertHalfSpace),
@@ -22,6 +22,7 @@ func NormalizeText(input *C.char, convertHalfSpace C.bool, combineSpace C.bool, 
 		NormalizePunctuations:   bool(normalizePunctuations),
 		EndsWithEndOfLineChar:   bool(endWithEOL),
 		IntToWord:               bool(intToWord),
+		ConvertNumberLang:       options.Language(C.GoString(language)),
 	}
 
 	// Initialize the normalizer with the options

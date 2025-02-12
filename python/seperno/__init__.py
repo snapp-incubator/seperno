@@ -23,7 +23,8 @@ seperno = ctypes.CDLL(lib_path)
 seperno.NormalizeText.argtypes = [
     ctypes.c_char_p,
     ctypes.c_bool, ctypes.c_bool, ctypes.c_bool,
-    ctypes.c_bool, ctypes.c_bool, ctypes.c_bool, ctypes.c_bool
+    ctypes.c_bool, ctypes.c_bool, ctypes.c_bool,
+    ctypes.c_bool, ctypes.c_char_p
 ]
 seperno.NormalizeText.restype = ctypes.c_char_p
 
@@ -35,7 +36,8 @@ def normalize_text(
     remove_url=False,
     normalize_punctuations=False,
     end_with_eol=False,
-    int_to_word=False
+    int_to_word=False,
+    number_language="en"
 ):
     """Python wrapper for the Go-based text normalizer."""
     return seperno.NormalizeText(
@@ -47,4 +49,5 @@ def normalize_text(
         ctypes.c_bool(normalize_punctuations),
         ctypes.c_bool(end_with_eol),
         ctypes.c_bool(int_to_word),
+        number_language.encode("utf-8"),
     ).decode("utf-8")

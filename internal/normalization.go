@@ -110,9 +110,6 @@ func (n Normalize) BasicNormalizer(input string) string {
 	s = strings.ReplaceAll(s, nullString, emptyString)
 	stringInput := strings.ToLower(s)
 
-	if n.spaceCombiner {
-		stringInput = replaceMultiSpace(stringInput)
-	}
 	if n.urlRemover {
 		stringInput = removeURLs(stringInput)
 	}
@@ -121,6 +118,9 @@ func (n Normalize) BasicNormalizer(input string) string {
 	}
 	if n.endsWithEndOfLineChar {
 		stringInput = normalizeEndsWithEndOfLineChar(stringInput)
+	}
+	if n.spaceCombiner {
+		stringInput = replaceMultiSpace(stringInput)
 	}
 	if n.outerSpaceRemover { // should be last normalization step
 		stringInput = removeOuterSpace(stringInput)

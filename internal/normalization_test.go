@@ -111,6 +111,15 @@ func TestNormalize_BasicNormalizer(t *testing.T) {
 			},
 			want: "بیست یک هزار",
 		},
+		{
+			name: "Should combine space after remove special characters",
+			args: args{
+				input:              "مدرسه - ابتدایی",
+				spaceCombiner:      true,
+				removeSpecialChars: true,
+			},
+			want: "مدرسه ابتدایی",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

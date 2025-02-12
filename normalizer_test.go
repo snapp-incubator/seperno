@@ -74,6 +74,36 @@ func TestNormalize_BasicNormalizer(t *testing.T) {
 			},
 			want: "خیابان پانزده خرداد",
 		},
+		{
+			name: "Should replace number with Persian Number",
+			args: args{
+				input: "خیابان 15 خرداد",
+				ops: []options.Options{
+					WithConvertNumberToLanguage(options.LanguageFa),
+				},
+			},
+			want: "خیابان ۱۵ خرداد",
+		},
+		{
+			name: "Should replace number with English Number",
+			args: args{
+				input: "خیابان ۱۵ خرداد",
+				ops: []options.Options{
+					WithConvertNumberToLanguage(options.LanguageEn),
+				},
+			},
+			want: "خیابان 15 خرداد",
+		},
+		{
+			name: "Should replace number with Arabic Number",
+			args: args{
+				input: "خیابان ۱۵ خرداد",
+				ops: []options.Options{
+					WithConvertNumberToLanguage(options.LanguageAr),
+				},
+			},
+			want: "خیابان ١٥ خرداد",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

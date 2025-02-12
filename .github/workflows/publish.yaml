@@ -47,7 +47,7 @@ jobs:
           if [[ "$RUNNER_OS" == "Linux" ]]; then
             python setup.py bdist_wheel --plat-name manylinux2014_x86_64
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            python setup.py bdist_wheel --plat-name macosx_10_15_x86_64
+            python setup.py bdist_wheel --plat-name macosx_11_0_arm64
           fi
 
       - name: Upload artifacts

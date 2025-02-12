@@ -12,7 +12,7 @@ else:
 
 setup(
     name="seperno",
-    version="1.1.5",
+    version="1.1.6",
     author="Sepehr Sohrabpour",
     author_email="sepehrxsohrabpour@gmail.com",
     description="Python wrapper for Go-based Seperno text normalization",

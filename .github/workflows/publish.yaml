@@ -22,10 +22,11 @@ jobs:
 
       - name: Build Go shared library
         run: |
+          cd python
           if [[ "$RUNNER_OS" == "Linux" ]]; then
-            go build -o your_package_name/libyourlibrary.so -buildmode=c-shared your_package_name/main.go
+            go build -o seperno/seperno.so -buildmode=c-shared export.go
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            go build -o your_package_name/libyourlibrary.dylib -buildmode=c-shared your_package_name/main.go
+            go build -o seperno/seperno.dylib -buildmode=c-shared export.go
           fi
 
       - name: Set up Python
@@ -47,7 +48,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist-${{ runner.os }}
-          path: dist
+          path: python/dist
 
   publish:
     needs: build

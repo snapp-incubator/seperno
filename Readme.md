@@ -1,5 +1,3 @@
-Here’s the README content in Markdown format:
-
 # Persian Text Normalizer - Seperno 
 ### *Search Persian Normalizer*
 

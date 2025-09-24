@@ -8,6 +8,7 @@ var DefaultOptions = NormalizerOptions{
 	NormalizePunctuations:   false,
 	EndsWithEndOfLineChar:   false,
 	IntToWord:               false,
+	WordToInt:               false,
 	ConvertNumberLang:       LanguageEn,
 }
 
@@ -27,6 +28,7 @@ type NormalizerOptions struct {
 	NormalizePunctuations   bool
 	EndsWithEndOfLineChar   bool
 	IntToWord               bool
+	WordToInt               bool
 	ConvertNumberLang       Language
 }
 

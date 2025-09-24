@@ -64,10 +64,19 @@ func WithConvertNumberToLanguage(language options.Language) options.Options {
 	})
 }
 
+// WithWordToInt converts written numbers to digits
+func WithWordToInt() options.Options {
+	return options.NewFuncOption(func(option *options.NormalizerOptions) {
+		option.WordToInt = true
+		option.ConvertNumberLang = options.LanguageFa
+	})
+}
+
 type Normalize interface {
 	FindHalfSpace(input, halfSpace string) string
 	BasicNormalizer(input string) string
 	VariationSelectorsRemover(input []string) []string
 	BasicNormalizerArray(input []string) []string
 	BasicNormalizerSlice(input []string) []string
+	ConvertWordsToInt(input string) (string, []int64)
 }

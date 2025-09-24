@@ -113,14 +113,14 @@ func TestConvertWordsToIntFa(t *testing.T) {
 		// Addresses with multiple numbers
 		{
 			name:     "خیابان بیست و چهار پلاک ده طبقه سوم",
-			input:    "خیابان بیست و چهار، پلاک ده، طبقه سوم",
-			expected: "خیابان 24، پلاک 10، طبقه 3",
+			input:    "خیابان بیست و چهار پلاک ده طبقه سوم",
+			expected: "خیابان 24 پلاک 10 طبقه 3",
 			numbers:  []int64{24, 10, 3},
 		},
 		{
 			name:     "خیابان پنجم پلاک دوازده واحد هفت",
-			input:    "خیابان پنجم، پلاک دوازده، واحد هفت",
-			expected: "خیابان 5، پلاک 12، واحد 7",
+			input:    "خیابان پنجم پلاک دوازده واحد هفت",
+			expected: "خیابان 5 پلاک 12 واحد 7",
 			numbers:  []int64{5, 12, 7},
 		},
 
@@ -141,8 +141,8 @@ func TestConvertWordsToIntFa(t *testing.T) {
 		// Phone numbers
 		{
 			name:     "تلفن صفر نهصد و بیست",
-			input:    "تلفن: صفر نهصد و بیست",
-			expected: "تلفن: 0 920",
+			input:    "تلفن صفر نهصد و بیست",
+			expected: "تلفن 0 920",
 			numbers:  []int64{0, 920},
 		},
 
@@ -202,8 +202,8 @@ func TestConvertWordsToIntFa(t *testing.T) {
 		// Mix of thousands and smaller units
 		{
 			name:     "خیابان هزار و بیست پلاک دویست و سه",
-			input:    "خیابان هزار و بیست، پلاک دویست و سه",
-			expected: "خیابان 1020، پلاک 203",
+			input:    "خیابان هزار و بیست پلاک دویست و سه",
+			expected: "خیابان 1020 پلاک 203",
 			numbers:  []int64{1020, 203},
 		},
 
@@ -213,6 +213,12 @@ func TestConvertWordsToIntFa(t *testing.T) {
 			input:    "پلاک ۱۲۳۴",
 			expected: "پلاک 1234",
 			numbers:  []int64{1234},
+		},
+		{
+			name:     "عدد هزاری",
+			input:    "نمایندگی هزارو هفتصدوهفده کرمان موتور",
+			expected: "نمایندگی 1717 کرمان موتور",
+			numbers:  []int64{1717},
 		},
 	}
 

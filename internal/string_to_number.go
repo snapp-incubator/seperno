@@ -48,23 +48,25 @@ var persianNumberMap = map[string]string{
 	"هزار":   "1000",
 }
 
-// ordinalNumberMap handles irregular ordinals.
+// ordinalNumberMap maps irregular Persian ordinal words to digits.
 var ordinalNumberMap = map[string]string{
 	"اول": "1",
 	"دوم": "2",
 	"سوم": "3",
 }
 
-// ordinalSuffixes maps common Persian ordinal suffixes.
+// ordinalSuffixes lists common Persian ordinal suffixes.
 var ordinalSuffixes = []string{"م", "ام", "وم", "مین"}
 
-// Precompiled helpers
+// lettersRe matches strings containing only Persian letters.
 var lettersRe = regexp.MustCompile(`^\p{L}+$`)
 
-// ConvertWordsToIntFa converts Persian number words in an input to digits
-// and also returns the list of integers found.
+// ConvertWordsToIntFa converts Persian number words to digits and returns the converted string
+// along with a slice of integers found in the input. It handles number words (e.g., "بیست"),
+// existing digits (e.g., "22"), and compound numbers with concatenated "و" (e.g., "هزاروهفتصد").
 func ConvertWordsToIntFa(input string) (string, []int64) {
-	// Split the input into words, preserving delimiters (spaces, commas, etc.).
+	// Preprocess to handle concatenated "و" adjacent to number words.
+	input = preprocessConjunctions(input)
 	words := splitWithDelimiters(input)
 	var result []string
 	var numbers []int64
@@ -82,33 +84,69 @@ func ConvertWordsToIntFa(input string) (string, []int64) {
 	return strings.Join(result, ""), numbers
 }
 
-// splitWithDelimiters splits the input string into words, digits, punctuation, and whitespace.
+// preprocessConjunctions inserts spaces around "و" when it’s adjacent to one or two number words.
+func preprocessConjunctions(input string) string {
+	// List all number words for regex.
+	var numberWords []string
+	for word := range persianNumberMap {
+		numberWords = append(numberWords, regexp.QuoteMeta(word))
+	}
+	for word := range ordinalNumberMap {
+		numberWords = append(numberWords, regexp.QuoteMeta(word))
+	}
+	numberWordPattern := `(` + strings.Join(numberWords, "|") + `)`
+
+	// Patterns to match:
+	// 1. when <numberWord>و<numberWord> → <numberWord> و <numberWord>
+	// 2. when  <numberWord>و → <numberWord> و
+	// 3. when و<numberWord> → و <numberWord>
+	patterns := []struct {
+		re   *regexp.Regexp
+		repl string
+	}{
+		{regexp.MustCompile(numberWordPattern + `و` + numberWordPattern), "$1 و $2"},
+		{regexp.MustCompile(numberWordPattern + `و`), "$1 و"},
+		{regexp.MustCompile(`و` + numberWordPattern), "و $1"},
+	}
+
+	// Apply all replacements.
+	result := input
+	for _, p := range patterns {
+		result = p.re.ReplaceAllString(result, p.repl)
+	}
+	return result
+}
+
+// splitWithDelimiters splits the input into tokens: Persian words, digits, and spaces.
+// Assumes punctuation is pre-removed and special spaces are normalized to regular spaces.
 func splitWithDelimiters(input string) []string {
-	re := regexp.MustCompile(`([\p{L}]+|[\p{N}]+|\p{P}|\s+)`)
+	re := regexp.MustCompile(`([\p{L}]+|[\p{N}]+|\s+)`)
 	return re.FindAllString(input, -1)
 }
 
-// convertNumberWord converts a single or compound number word to its digit equivalent.
+// convertNumberWord converts a single or compound number word (e.g., "سی و پنج") or digit
+// to its numeric equivalent. It returns the converted string, a boolean indicating if it’s a number,
+// and the numeric value. Updates the index for compound numbers.
 func convertNumberWord(word string, words []string, index *int) (string, bool, int64) {
 	trimmed := strings.TrimSpace(word)
 	if trimmed == "" {
 		return word, false, 0
 	}
 
-	// --- Case 0: already digits (English or Persian) ---
+	// Case 1: Existing digits (English or Persian).
 	if isNumeric(trimmed) {
 		normalized := normalizeDigits(trimmed)
 		val, _ := strconv.ParseInt(normalized, 10, 64)
 		return normalized, true, val
 	}
 
-	// --- Case 1: irregular ordinals like "اول" / "دوم" / "سوم" ---
+	// Case 2: Irregular ordinals (e.g., "اول", "دوم").
 	if val, ok := ordinalNumberMap[trimmed]; ok {
 		numVal, _ := strconv.ParseInt(val, 10, 64)
 		return val, true, numVal
 	}
 
-	// --- Case 2: suffix-based ordinals like "چهارمین", "پنجمین" ---
+	// Case 3: Ordinals with suffixes (e.g., "چهارمین", "پنجم").
 	for _, suffix := range ordinalSuffixes {
 		if strings.HasSuffix(trimmed, suffix) {
 			base := strings.TrimSuffix(trimmed, suffix)
@@ -123,15 +161,11 @@ func convertNumberWord(word string, words []string, index *int) (string, bool, i
 		}
 	}
 
-	// --- Case 3: normal words (cardinal or compound) ---
-	numStr, isNumber, numVal := parseCompoundNumber(trimmed, words, index)
-	if !isNumber {
-		return word, false, 0
-	}
-	return numStr, true, numVal
+	// Case 4: Cardinal or compound numbers (e.g., "سی و پنج").
+	return parseCompoundNumber(trimmed, words, index)
 }
 
-// Checks if a string is entirely numeric (English or Persian digits).
+// isNumeric checks if a string contains only digits (English 0-9 or Persian ۰-۹).
 func isNumeric(s string) bool {
 	if s == "" {
 		return false
@@ -145,7 +179,7 @@ func isNumeric(s string) bool {
 	return true
 }
 
-// Converts Persian digits to English.
+// normalizeDigits converts Persian digits to English digits.
 func normalizeDigits(s string) string {
 	var b strings.Builder
 	for _, r := range s {
@@ -158,49 +192,49 @@ func normalizeDigits(s string) string {
 	return b.String()
 }
 
-// parseCompoundNumber parses single or compound number words (e.g., "سی و پنج").
+// parseCompoundNumber parses single or compound number words (e.g., "سی و پنج") into digits.
+// Returns the converted string, a boolean indicating success, and the numeric value.
 func parseCompoundNumber(word string, words []string, index *int) (string, bool, int64) {
-	cur := *index
-	// First piece must be a known number word.
+	// Check if the first word is a known number word.
 	first, ok := persianNumberMap[word]
 	if !ok {
 		return "", false, 0
 	}
 	total, _ := strconv.ParseInt(first, 10, 64)
-	last := cur
+	last := *index
 
-	// Try to consume sequences: (spaces) "و" (spaces) <number-word>
+	// Process compound numbers (e.g., "سی و پنج").
 	for {
 		j := last + 1
-		// skip whitespace
+		// Skip spaces.
 		for j < len(words) && strings.TrimSpace(words[j]) == "" {
 			j++
 		}
-		// need "و"
+		// Expect "و" (and) for compound numbers.
 		if j >= len(words) || words[j] != "و" {
 			break
 		}
-		j++ // past "و"
-		// skip whitespace after "و"
+		j++ // Move past "و".
+		// Skip spaces after "و".
 		for j < len(words) && strings.TrimSpace(words[j]) == "" {
 			j++
 		}
+		// Ensure the next token is a valid word.
 		if j >= len(words) || !lettersRe.MatchString(words[j]) {
-			// not a valid next word -> stop (don't consume "و")
 			break
 		}
-		// next must be a number word
+		// The next word must be a number word.
 		if nextStr, ok := persianNumberMap[words[j]]; ok {
 			v, _ := strconv.ParseInt(nextStr, 10, 64)
 			total += v
-			last = j // consume up to this token
+			last = j // Update to the last consumed token.
 			continue
 		}
-		// next word isn't a number -> stop (don't consume)
+		// Not a number word; stop processing.
 		break
 	}
 
-	// Move outer loop index to the last consumed number token.
+	// Update the outer loop index to the last consumed token.
 	*index = last
 	return strconv.FormatInt(total, 10), true, total
 }

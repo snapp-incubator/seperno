@@ -220,11 +220,56 @@ func TestConvertWordsToIntFa(t *testing.T) {
 			expected: "نمایندگی 1717 کرمان موتور",
 			numbers:  []int64{1717},
 		},
+		{
+			name:     "ترکیب هزار",
+			input:    "تعداد هزار و بیست",
+			expected: "تعداد 1020",
+			numbers:  []int64{1020},
+		},
+		{
+			name:     "یک قبل از صد بیاد",
+			input:    "یک صد و ده تا تکه",
+			expected: "110 تا تکه",
+			numbers:  []int64{110},
+		},
+		{
+			name:     "یک بچسبه به صد",
+			input:    "یکصد و پنجاه",
+			expected: "150",
+			numbers:  []int64{150},
+		},
+		{
+			name:     "بیست بچسبه به هزار",
+			input:    "بیست هزار و سی و دو تا تسک دارم",
+			expected: "20032 تا تسک دارم",
+			numbers:  []int64{20032},
+		},
+		{
+			name:     "دو بچسبه به هزار",
+			input:    "دو هزار و سی و دو تا تسک دارم",
+			expected: "2032 تا تسک دارم",
+			numbers:  []int64{2032},
+		},
+		{
+			name:     "سیصد بچسبه به هزار",
+			input:    "سیصد هزار و سی و دو تا تسک دارم",
+			expected: "300032 تا تسک دارم",
+			numbers:  []int64{300032},
+		},
+		{
+			name:     "چهار صد با اسپیس",
+			input:    "چهار صد و ده",
+			expected: "410",
+			numbers:  []int64{410},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, nums := ConvertWordsToIntFa(tt.input)
+			if got != tt.expected || !reflect.DeepEqual(nums, tt.numbers) {
+				t.Errorf("error for input: %s", tt.input)
+			}
 			if got != tt.expected {
 				t.Errorf("got %q, want %q", got, tt.expected)
 			}

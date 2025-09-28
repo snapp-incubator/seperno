@@ -104,6 +104,75 @@ func TestNormalize_BasicNormalizer(t *testing.T) {
 			},
 			want: "خیابان ١٥ خرداد",
 		},
+		{
+			name: "Should convert simple Persian words to digits",
+			args: args{
+				input: "خیابان پنج",
+				ops:   []options.Options{WithWordToInt()},
+			},
+			want: "خیابان 5",
+		},
+		{
+			name: "Should convert compound Persian numbers to digits",
+			args: args{
+				input: "خیابان بیست و سه",
+				ops:   []options.Options{WithWordToInt()},
+			},
+			want: "خیابان 23",
+		},
+		{
+			name: "Should convert ordinals to digits",
+			args: args{
+				input: "طبقه سوم",
+				ops:   []options.Options{WithWordToInt()},
+			},
+			want: "طبقه 3",
+		},
+		{
+			name: "Should convert ordinals with suffix to digits",
+			args: args{
+				input: "بیست و پنجمین نمایشگاه",
+				ops:   []options.Options{WithWordToInt()},
+			},
+			want: "25 نمایشگاه",
+		},
+		{
+			name: "Should convert hundreds to digits",
+			args: args{
+				input: "یک صد و پنجاه",
+				ops:   []options.Options{WithWordToInt()},
+			},
+			want: "150",
+		},
+		{
+			name: "Should convert thousands to digits",
+			args: args{
+				input: "بیست هزار و سی و دو",
+				ops:   []options.Options{WithWordToInt()},
+			},
+			want: "20032",
+		},
+		{
+			name: "Should handle multiple numbers in text",
+			args: args{
+				input: "خیابان بیست و چهار پلاک ده طبقه سوم",
+				ops:   []options.Options{WithWordToInt()},
+			},
+			want: "خیابان 24 پلاک 10 طبقه 3",
+		},
+		{
+			name: "Should combine with other normalizers",
+			args: args{
+				input: "خیابان   پانزده،  پلاک دو.",
+				ops: []options.Options{
+					WithWordToInt(),
+					WithSpaceCombiner(),
+					WithNormalizePunctuations(),
+					WithOuterSpaceRemover(),
+				},
+			},
+			want: "خیابان 15 پلاک 2",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

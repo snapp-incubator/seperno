@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -71,9 +70,6 @@ func ConvertWordsToIntFa(input string) (string, []int64) {
 	input = preprocessConjunctions(input)
 	words := splitWithDelimiters(input)
 
-	fmt.Println("INPUT:", input)
-	fmt.Println("WORDS:", words)
-
 	var result []string
 	var numbers []int64
 
@@ -136,10 +132,8 @@ func preprocessConjunctions(input string) string {
 
 	// Apply all replacements.
 	result := input
-	fmt.Println("START!!!", result)
 	for _, p := range patterns {
 		result = p.re.ReplaceAllString(result, p.repl)
-		fmt.Println("loop", result)
 	}
 	return result
 }
@@ -155,7 +149,6 @@ func splitWithDelimiters(input string) []string {
 // to its numeric equivalent. It returns the converted string, a boolean indicating if it’s a number,
 // and the numeric value. Updates the index for compound numbers.
 func convertNumberWord(word string, words []string, index *int) (string, bool, int64) {
-	fmt.Println("\n\nLets check if we have a number:\nword:", word, "\nwords:", words, "\nindex:", *index)
 	trimmed := strings.TrimSpace(word)
 	if trimmed == "" {
 		return word, false, 0
@@ -165,14 +158,12 @@ func convertNumberWord(word string, words []string, index *int) (string, bool, i
 	if isNumeric(trimmed) {
 		normalized := normalizeDigits(trimmed)
 		val, _ := strconv.ParseInt(normalized, 10, 64)
-		fmt.Println("\nWe found a Numeric:", normalized, val)
 		return normalized, true, val
 	}
 
 	// Case 2: Irregular ordinals (e.g., "اول", "دوم").
 	if val, ok := ordinalNumberMap[trimmed]; ok {
 		numVal, _ := strconv.ParseInt(val, 10, 64)
-		fmt.Println("\nWe found a Ordinal:", val, numVal)
 		return val, true, numVal
 	}
 
@@ -182,19 +173,16 @@ func convertNumberWord(word string, words []string, index *int) (string, bool, i
 			base := strings.TrimSuffix(trimmed, suffix)
 			if val, ok := persianNumberMap[base]; ok {
 				numVal, _ := strconv.ParseInt(val, 10, 64)
-				fmt.Println("\nWe found a Persian:", val, numVal)
 				return val, true, numVal
 			}
 			if val, ok := ordinalNumberMap[base]; ok {
 				numVal, _ := strconv.ParseInt(val, 10, 64)
-				fmt.Println("\nWe found a Ordinal Suffixed:", val, numVal)
 				return val, true, numVal
 			}
 		}
 	}
 
 	// Case 4: Cardinal or compound numbers (e.g., "سی و پنج").
-	fmt.Println("\nWe did not find a number, lets find compound number")
 	return parseCompoundNumber(trimmed, words, index)
 }
 
@@ -286,10 +274,45 @@ func parseCompoundNumber(word string, words []string, index *int) (string, bool,
 		if j >= len(words) || !lettersRe.MatchString(words[j]) {
 			break
 		}
-		// The next word must be a number word.
-		if nextStr, ok := persianNumberMap[words[j]]; ok {
+
+		// Check for ordinals with suffixes (e.g., "پنجم", "پنجمین")
+		nextWord := words[j]
+		var nextValue int64
+		found := false
+
+		// First check if it's a direct number word
+		if nextStr, ok := persianNumberMap[nextWord]; ok {
 			v, _ := strconv.ParseInt(nextStr, 10, 64)
-			total += v
+			nextValue = v
+			found = true
+		} else if nextStr, ok := ordinalNumberMap[nextWord]; ok {
+			// Check irregular ordinals
+			v, _ := strconv.ParseInt(nextStr, 10, 64)
+			nextValue = v
+			found = true
+		} else {
+			// Check for ordinal suffixes
+			for _, suffix := range ordinalSuffixes {
+				if strings.HasSuffix(nextWord, suffix) {
+					base := strings.TrimSuffix(nextWord, suffix)
+					if val, ok := persianNumberMap[base]; ok {
+						v, _ := strconv.ParseInt(val, 10, 64)
+						nextValue = v
+						found = true
+						break
+					}
+					if val, ok := ordinalNumberMap[base]; ok {
+						v, _ := strconv.ParseInt(val, 10, 64)
+						nextValue = v
+						found = true
+						break
+					}
+				}
+			}
+		}
+
+		if found {
+			total += nextValue
 			last = j // Update to the last consumed token.
 			continue
 		}

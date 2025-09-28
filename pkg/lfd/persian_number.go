@@ -47,7 +47,7 @@ func (f *PersianNumberDetector) DetectNumbers(text string) []DetectedNumber {
 		return []DetectedNumber{}
 	}
 
-	preprocessed := preprocessConjunctions(text)
+	preprocessed, addedSpacesPSumArray := preprocessConjunctions(text)
 	tokens := tokenizeWithPositions(preprocessed)
 
 	result := make([]DetectedNumber, 0)
@@ -59,10 +59,11 @@ func (f *PersianNumberDetector) DetectNumbers(text string) []DetectedNumber {
 		}
 
 		if _, numVal, startIdx, endIdx, isNumber := parseTokenWithPositions(token, tokens, &i); isNumber {
+
 			result = append(result, DetectedNumber{
 				Number:     numVal,
-				StartIndex: startIdx,
-				EndIndex:   endIdx,
+				StartIndex: startIdx - addedSpacesPSumArray[startIdx],
+				EndIndex:   endIdx - addedSpacesPSumArray[endIdx],
 			})
 		}
 	}
@@ -198,7 +199,7 @@ func parseCompoundNumberWithPositions(initial int64, startToken Token, tokens []
 }
 
 // Keep the rest of the functions unchanged
-func preprocessConjunctions(input string) string {
+func preprocessConjunctions(input string) (string, []int) {
 	numberWords := getNumberWordList()
 	pattern := `(` + strings.Join(numberWords, "|") + `)`
 
@@ -217,7 +218,29 @@ func preprocessConjunctions(input string) string {
 		result = re.ReplaceAllString(result, r.replacement)
 	}
 
-	return result
+	addedSpaces := make([]int, 0)
+	ptr := 0
+	resultRunes := []rune(result)
+	inputRunes := []rune(input)
+	for i := 0; i < len(resultRunes) && ptr < len(inputRunes); i++ {
+		if resultRunes[i] != ' ' && inputRunes[ptr] != ' ' {
+			ptr++
+		} else if resultRunes[i] == ' ' && inputRunes[ptr] == ' ' {
+			ptr++
+		} else if resultRunes[i] == ' ' && inputRunes[ptr] != ' ' {
+			addedSpaces = append(addedSpaces, i)
+		}
+	}
+
+	psumArray := make([]int, len(resultRunes))
+	for _, i := range addedSpaces {
+		psumArray[i] = 1
+	}
+	for i := 1; i < len(psumArray); i++ {
+		psumArray[i] += psumArray[i-1]
+	}
+
+	return result, psumArray
 }
 
 func getNumberWordList() []string {

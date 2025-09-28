@@ -221,6 +221,12 @@ func TestConvertWordsToIntFa(t *testing.T) {
 			numbers:  []DetectedNumber{{Number: 1717, StartIndex: 9, EndIndex: 24}},
 		},
 		{
+			name:     "compound_thousand_number_2",
+			input:    "پلاک صد و هفتادو چهار زنگ بیستوسه طبقه چهار",
+			expected: "پلاک 174 زنگ 23 طبقه 4",
+			numbers:  []DetectedNumber{{Number: 174, StartIndex: 5, EndIndex: 20}, {Number: 23, StartIndex: 26, EndIndex: 32}, {Number: 4, StartIndex: 39, EndIndex: 42}},
+		},
+		{
 			name:     "thousand_twenty_combination",
 			input:    "تعداد هزار و بیست",
 			expected: "تعداد 1020",

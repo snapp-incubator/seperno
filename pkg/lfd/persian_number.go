@@ -47,7 +47,7 @@ func (f *PersianNumberDetector) DetectNumbers(text string) []DetectedNumber {
 		return []DetectedNumber{}
 	}
 
-	preprocessed := preprocessConjunctions(text)
+	preprocessed, spaceAdjustments := preprocessConjunctions(text)
 	tokens := tokenizeWithPositions(preprocessed)
 
 	result := make([]DetectedNumber, 0)
@@ -59,10 +59,13 @@ func (f *PersianNumberDetector) DetectNumbers(text string) []DetectedNumber {
 		}
 
 		if _, numVal, startIdx, endIdx, isNumber := parseTokenWithPositions(token, tokens, &i); isNumber {
+			// Adjust indices to map back to original text
+			originalStart, originalEnd := adjustIndicesForOriginalText(startIdx, endIdx, spaceAdjustments)
+
 			result = append(result, DetectedNumber{
 				Number:     numVal,
-				StartIndex: startIdx,
-				EndIndex:   endIdx,
+				StartIndex: originalStart,
+				EndIndex:   originalEnd,
 			})
 		}
 	}
@@ -197,8 +200,12 @@ func parseCompoundNumberWithPositions(initial int64, startToken Token, tokens []
 	return total, endIdx, true
 }
 
-// Keep the rest of the functions unchanged
-func preprocessConjunctions(input string) string {
+type SpaceAdjustment struct {
+	Position int // Position where space was added
+	Count    int // Number of spaces added at this position
+}
+
+func preprocessConjunctions(input string) (string, []SpaceAdjustment) {
 	numberWords := getNumberWordList()
 	pattern := `(` + strings.Join(numberWords, "|") + `)`
 
@@ -212,12 +219,60 @@ func preprocessConjunctions(input string) string {
 	}
 
 	result := input
+	var adjustments []SpaceAdjustment
+	totalOffset := 0
+
 	for _, r := range replacements {
 		re := regexp.MustCompile(r.pattern)
-		result = re.ReplaceAllString(result, r.replacement)
+		matches := re.FindAllStringIndex(result, -1)
+
+		// Process matches in reverse order to maintain correct positions
+		for i := len(matches) - 1; i >= 0; i-- {
+			match := matches[i]
+			original := result[match[0]:match[1]]
+			replacement := re.ReplaceAllString(original, r.replacement)
+
+			if len(replacement) > len(original) {
+				spacesAdded := len(replacement) - len(original)
+				// Convert byte position to rune position
+				runePos := utf8.RuneCountInString(result[:match[0]]) - totalOffset
+				adjustments = append(adjustments, SpaceAdjustment{
+					Position: runePos,
+					Count:    spacesAdded,
+				})
+				totalOffset += spacesAdded
+			}
+
+			result = result[:match[0]] + replacement + result[match[1]:]
+		}
 	}
 
-	return result
+	// Sort adjustments by position (left to right)
+	for i := 0; i < len(adjustments)-1; i++ {
+		for j := i + 1; j < len(adjustments); j++ {
+			if adjustments[i].Position > adjustments[j].Position {
+				adjustments[i], adjustments[j] = adjustments[j], adjustments[i]
+			}
+		}
+	}
+
+	return result, adjustments
+}
+
+func adjustIndicesForOriginalText(startIdx, endIdx int, adjustments []SpaceAdjustment) (int, int) {
+	adjustedStart := startIdx
+	adjustedEnd := endIdx
+
+	for _, adj := range adjustments {
+		if adj.Position <= startIdx {
+			adjustedStart -= adj.Count
+		}
+		if adj.Position <= endIdx {
+			adjustedEnd -= adj.Count
+		}
+	}
+
+	return adjustedStart, adjustedEnd
 }
 
 func getNumberWordList() []string {

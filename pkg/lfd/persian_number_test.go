@@ -1,6 +1,7 @@
 package lfd
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -294,6 +295,173 @@ func TestConvertWordsToIntFa(t *testing.T) {
 			results := detector.DetectNumbers(tt.input)
 			if !reflect.DeepEqual(results, tt.numbers) {
 				t.Errorf("input: %v, detected numbers: %v, want: %v", tt.input, results, tt.numbers)
+			}
+		})
+	}
+}
+
+func BenchmarkPersianNumberDetector(b *testing.B) {
+	detector := &PersianNumberDetector{}
+
+	benchmarks := []struct {
+		name  string
+		input string
+	}{
+		// Simple cases
+		{
+			name:  "single_digit",
+			input: "سه",
+		},
+		{
+			name:  "single_ordinal",
+			input: "اول",
+		},
+		{
+			name:  "teen_number",
+			input: "یازده",
+		},
+		{
+			name:  "tens_number",
+			input: "بیست",
+		},
+
+		// Compound numbers
+		{
+			name:  "compound_number",
+			input: "بیست و سه",
+		},
+		{
+			name:  "hundred_compound",
+			input: "صد و بیست و سه",
+		},
+		{
+			name:  "thousand_compound",
+			input: "هزار و دویست",
+		},
+		{
+			name:  "complex_thousand",
+			input: "بیست هزار و سی و دو",
+		},
+
+		// Address-like strings
+		{
+			name:  "simple_address",
+			input: "خیابان بیست پلاک ده",
+		},
+		{
+			name:  "complex_address",
+			input: "خیابان بیست و چهار پلاک ده طبقه سوم",
+		},
+		{
+			name:  "very_complex_address",
+			input: "خیابان پنجم پلاک دوازده واحد هفت",
+		},
+
+		// Mixed content
+		{
+			name:  "mixed_digits_words",
+			input: "پلاک بیست 22",
+		},
+		{
+			name:  "phone_number",
+			input: "تلفن صفر نهصد و بیست",
+		},
+		{
+			name:  "persian_digits",
+			input: "پلاک ۱۲۳۴",
+		},
+
+		// Edge cases
+		{
+			name:  "no_numbers",
+			input: "خیابان بدون شماره",
+		},
+		{
+			name:  "empty_string",
+			input: "",
+		},
+
+		// Long text
+		{
+			name:  "long_text",
+			input: "در خیابان بیست و چهار پلاک صد و هفتاد و سه واحد دوازده طبقه پنجم زنگ دوم قرار دارد و شماره تلفن آن صفر دو یک هفت هزار و نهصد و بیست و سه است",
+		},
+
+		// Compound without spaces
+		{
+			name:  "compound_no_spaces",
+			input: "هزارو هفتصدوهفده",
+		},
+		{
+			name:  "multiple_compounds",
+			input: "صد و هفتادو چهار زنگ بیستوسه طبقه چهار",
+		},
+	}
+
+	for _, bm := range benchmarks {
+		b.Run(bm.name, func(b *testing.B) {
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				_ = detector.DetectNumbers(bm.input)
+			}
+		})
+	}
+}
+
+func BenchmarkPersianNumberDetector_Memory(b *testing.B) {
+	detector := &PersianNumberDetector{}
+	input := "خیابان بیست و چهار پلاک صد و هفتاد و سه واحد دوازده طبقه پنجم"
+
+	b.ResetTimer()
+	b.ReportAllocs()
+
+	for i := 0; i < b.N; i++ {
+		_ = detector.DetectNumbers(input)
+	}
+}
+
+func BenchmarkPreprocessConjunctions(b *testing.B) {
+	testCases := []struct {
+		name  string
+		input string
+	}{
+		{
+			name:  "simple",
+			input: "بیستو سه",
+		},
+		{
+			name:  "multiple",
+			input: "هزارو دویستو پنجاه",
+		},
+		{
+			name:  "long_text",
+			input: "در خیابان بیستو چهار پلاک صدو هفتادو سه قرار دارد",
+		},
+	}
+
+	for _, tc := range testCases {
+		b.Run(tc.name, func(b *testing.B) {
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				_, _ = preprocessConjunctions(tc.input)
+			}
+		})
+	}
+}
+
+func BenchmarkTokenizeWithPositions(b *testing.B) {
+	inputs := []string{
+		"بیست و سه",
+		"خیابان بیست و چهار پلاک ده",
+		"هزار و دویست و پنجاه و شش",
+		"در خیابان بیست و چهار پلاک صد و هفتاد و سه واحد دوازده قرار دارد",
+	}
+
+	for i, input := range inputs {
+		b.Run(fmt.Sprintf("input_%d", i+1), func(b *testing.B) {
+			b.ResetTimer()
+			for j := 0; j < b.N; j++ {
+				_ = tokenizeWithPositions(input)
 			}
 		})
 	}

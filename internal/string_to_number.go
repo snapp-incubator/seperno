@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -57,7 +58,7 @@ var ordinalNumberMap = map[string]string{
 }
 
 // ordinalSuffixes lists common Persian ordinal suffixes.
-var ordinalSuffixes = []string{"م", "ام", "وم", "مین"}
+var ordinalSuffixes = []string{"م", "ام", "وم", "مین", "ین"}
 
 // lettersRe matches strings containing only Persian letters.
 var lettersRe = regexp.MustCompile(`^\p{L}+$`)
@@ -69,11 +70,19 @@ func ConvertWordsToIntFa(input string) (string, []int64) {
 	// Preprocess to handle concatenated "و" adjacent to number words.
 	input = preprocessConjunctions(input)
 	words := splitWithDelimiters(input)
+
+	fmt.Println("INPUT:", input)
+	fmt.Println("WORDS:", words)
+
 	var result []string
 	var numbers []int64
 
 	for i := 0; i < len(words); i++ {
 		word := words[i]
+		if isSpace(word) {
+			result = append(result, " ")
+			continue
+		}
 		if numStr, isNumber, numVal := convertNumberWord(word, words, &i); isNumber {
 			result = append(result, numStr)
 			numbers = append(numbers, numVal)
@@ -83,6 +92,21 @@ func ConvertWordsToIntFa(input string) (string, []int64) {
 	}
 
 	return strings.Join(result, ""), numbers
+}
+
+func isSpace(word string) bool {
+	for _, r := range []rune(word) {
+		switch r {
+		case spaceZeroWidthNonJoiner,
+			space, noBreakSpace,
+			zeroWidthNoBreakSpace,
+			zeroWidthSpace:
+			continue
+		default:
+			return false
+		}
+	}
+	return true
 }
 
 // preprocessConjunctions inserts spaces around "و" when it’s adjacent to one or two number words.
@@ -112,8 +136,10 @@ func preprocessConjunctions(input string) string {
 
 	// Apply all replacements.
 	result := input
+	fmt.Println("START!!!", result)
 	for _, p := range patterns {
 		result = p.re.ReplaceAllString(result, p.repl)
+		fmt.Println("loop", result)
 	}
 	return result
 }
@@ -129,6 +155,7 @@ func splitWithDelimiters(input string) []string {
 // to its numeric equivalent. It returns the converted string, a boolean indicating if it’s a number,
 // and the numeric value. Updates the index for compound numbers.
 func convertNumberWord(word string, words []string, index *int) (string, bool, int64) {
+	fmt.Println("\n\nLets check if we have a number:\nword:", word, "\nwords:", words, "\nindex:", *index)
 	trimmed := strings.TrimSpace(word)
 	if trimmed == "" {
 		return word, false, 0
@@ -138,12 +165,14 @@ func convertNumberWord(word string, words []string, index *int) (string, bool, i
 	if isNumeric(trimmed) {
 		normalized := normalizeDigits(trimmed)
 		val, _ := strconv.ParseInt(normalized, 10, 64)
+		fmt.Println("\nWe found a Numeric:", normalized, val)
 		return normalized, true, val
 	}
 
 	// Case 2: Irregular ordinals (e.g., "اول", "دوم").
 	if val, ok := ordinalNumberMap[trimmed]; ok {
 		numVal, _ := strconv.ParseInt(val, 10, 64)
+		fmt.Println("\nWe found a Ordinal:", val, numVal)
 		return val, true, numVal
 	}
 
@@ -153,16 +182,19 @@ func convertNumberWord(word string, words []string, index *int) (string, bool, i
 			base := strings.TrimSuffix(trimmed, suffix)
 			if val, ok := persianNumberMap[base]; ok {
 				numVal, _ := strconv.ParseInt(val, 10, 64)
+				fmt.Println("\nWe found a Persian:", val, numVal)
 				return val, true, numVal
 			}
 			if val, ok := ordinalNumberMap[base]; ok {
 				numVal, _ := strconv.ParseInt(val, 10, 64)
+				fmt.Println("\nWe found a Ordinal Suffixed:", val, numVal)
 				return val, true, numVal
 			}
 		}
 	}
 
 	// Case 4: Cardinal or compound numbers (e.g., "سی و پنج").
+	fmt.Println("\nWe did not find a number, lets find compound number")
 	return parseCompoundNumber(trimmed, words, index)
 }
 
@@ -211,6 +243,36 @@ func parseCompoundNumber(word string, words []string, index *int) (string, bool,
 		for j < len(words) && strings.TrimSpace(words[j]) == "" {
 			j++
 		}
+
+		// Check for multiplicative pattern (e.g., "بیست هزار")
+		if j < len(words) && (words[j] == "هزار" || words[j] == "صد") {
+			if multiplier, ok := persianNumberMap[words[j]]; ok {
+				mult, _ := strconv.ParseInt(multiplier, 10, 64)
+				total = total * mult
+				last = j
+				j++
+				// Skip spaces after multiplier
+				for j < len(words) && strings.TrimSpace(words[j]) == "" {
+					j++
+				}
+				// Continue to check for more terms after multiplication
+				continue
+			}
+		}
+
+		// Check for separated hundreds (e.g., "یک صد")
+		if j < len(words) && words[j] == "صد" {
+			total = total * 100
+			last = j
+			j++
+			// Skip spaces after صد
+			for j < len(words) && strings.TrimSpace(words[j]) == "" {
+				j++
+			}
+			// Continue to check for more terms
+			continue
+		}
+
 		// Expect "و" (and) for compound numbers.
 		if j >= len(words) || words[j] != "و" {
 			break

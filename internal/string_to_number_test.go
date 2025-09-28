@@ -262,6 +262,24 @@ func TestConvertWordsToIntFa(t *testing.T) {
 			expected: "410",
 			numbers:  []int64{410},
 		},
+		{
+			name:     "چندمین",
+			input:    "بیست و پنجم نمایشگاه افرود",
+			expected: "25 نمایشگاه آفرود",
+			numbers:  []int64{25},
+		},
+		{
+			name:     "چندمین ۲",
+			input:    "بیست و پنجمین نمایشگاه افرود",
+			expected: "25 نمایشگاه آفرود",
+			numbers:  []int64{25},
+		},
+		{
+			name:     "چندمین ۳",
+			input:    "این اولین و دومین تست است",
+			expected: "این 1 و 2 تست است",
+			numbers:  []int64{1, 2},
+		},
 	}
 
 	for _, tt := range tests {

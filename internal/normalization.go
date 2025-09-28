@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"C"
 	"regexp"
 	"strconv"
 	"strings"
@@ -16,7 +17,6 @@ type Normalize struct {
 	normalizePunctuations   bool
 	endsWithEndOfLineChar   bool
 	intToWord               bool
-	wordToInt               bool
 	convertNumberLang       string
 }
 
@@ -29,14 +29,13 @@ func NewNormalizer(conf options.NormalizerOptions) *Normalize {
 		normalizePunctuations:   conf.NormalizePunctuations,
 		endsWithEndOfLineChar:   conf.EndsWithEndOfLineChar,
 		intToWord:               conf.IntToWord,
-		wordToInt:               conf.WordToInt,
 		convertNumberLang:       string(conf.ConvertNumberLang),
 	}
 }
 
 var (
 	multiSpaceRegex = regexp.MustCompile(`\s+`) // Matches one or more whitespace characters
-	urlRemovalRegex = regexp.MustCompile(`https?://\S+`)
+	urlRemovalRegex = regexp.MustCompile(`https?://[^\s]+`)
 	numberRegex     = regexp.MustCompile(`\b\d+\b`)
 	// Create a regex pattern to remove spaces from start and end
 	outerSpaceRegex = regexp.MustCompile(`^\s+|\s+$`)
@@ -53,21 +52,11 @@ func (n Normalize) spaceNormalizer(input string) string {
 	input = strings.ReplaceAll(input, "&zwnj;", " ")
 
 	// Convert input to a rune slice
-	input = cleanupSpaces(input, n.convertHalfSpaceToSpace)
-
-	// Create a new string, trim it, and replace nullChar
-	output := strings.TrimSpace(input)
-	output = strings.ReplaceAll(output, string(nullChar), "")
-	output = strings.ToLower(output)
-
-	return output
-}
-
-func cleanupSpaces(input string, halfSpaceToSpace bool) string {
 	inputRunes := []rune(input)
+
 	// Iterate through the runes
 	for i := 0; i < len(inputRunes); i++ {
-		if halfSpaceToSpace {
+		if n.convertHalfSpaceToSpace {
 			switch inputRunes[i] {
 			case spaceZeroWidthNonJoiner,
 				space, noBreakSpace,
@@ -90,7 +79,13 @@ func cleanupSpaces(input string, halfSpaceToSpace bool) string {
 			}
 		}
 	}
-	return string(inputRunes)
+
+	// Create a new string, trim it, and replace nullChar
+	output := strings.TrimSpace(string(inputRunes))
+	output = strings.ReplaceAll(output, string(nullChar), "")
+	output = strings.ToLower(output)
+
+	return output
 }
 
 // BasicNormalizer normalizes a Persian input string.
@@ -132,9 +127,6 @@ func (n Normalize) BasicNormalizer(input string) string {
 	}
 	if n.intToWord {
 		stringInput = replaceNumberToWords(stringInput)
-	}
-	if n.wordToInt {
-		stringInput, _ = n.ConvertWordsToInt(stringInput)
 	}
 	return stringInput
 }
@@ -491,21 +483,6 @@ func normalizeEndsWithEndOfLineChar(input string) string {
 		return string(runes[:len(runes)-1])
 	}
 	return input // No end-of-line character to remove
-}
-
-// ConvertWordsToInt converts input's number words to their integer representations.
-// It returns the modified string and a slice of integers found in the input.
-// Currently, this function only supports "fa" language
-func (n Normalize) ConvertWordsToInt(input string) (string, []int64) {
-	input = cleanupSpaces(input, true)
-	input = normalizePunctuations(input)
-
-	switch n.convertNumberLang {
-	case "fa":
-		return ConvertWordsToIntFa(input)
-	default:
-		return input, []int64{}
-	}
 }
 
 func containsRune(slice []rune, r rune) bool {

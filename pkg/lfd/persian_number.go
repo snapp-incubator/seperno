@@ -1,4 +1,4 @@
-package internal
+package lfd
 
 import (
 	"regexp"
@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// Number word mappings
+// DetectedNumber word mappings
 var (
 	persianNumberMap = map[string]int64{
 		"صفر": 0, "یک": 1, "دو": 2, "سه": 3, "چهار": 4, "پنج": 5,
@@ -32,35 +32,30 @@ var (
 	tokenRegex   = regexp.MustCompile(`([\p{L}]+|[\p{N}]+|\s+)`)
 )
 
-// ConvertWordsToIntFa converts Persian number words to digits
-func ConvertWordsToIntFa(input string) (string, []int64) {
-	if input == "" {
-		return "", nil
+type PersianNumberDetector struct{}
+
+// DetectNumbers converts Persian number words to digits
+func (f *PersianNumberDetector) DetectNumbers(text string) []DetectedNumber {
+	if text == "" {
+		return []DetectedNumber{}
 	}
 
-	preprocessed := preprocessConjunctions(input)
+	preprocessed := preprocessConjunctions(text)
 	tokens := tokenize(preprocessed)
 
-	var result strings.Builder
-	var numbers []int64
-
+	result := make([]DetectedNumber, 0)
 	for i := 0; i < len(tokens); i++ {
 		token := tokens[i]
 
 		if isWhitespace(token) {
-			result.WriteString(" ")
 			continue
 		}
 
-		if numStr, numVal, isNumber := parseToken(token, tokens, &i); isNumber {
-			result.WriteString(numStr)
-			numbers = append(numbers, numVal)
-		} else {
-			result.WriteString(token)
+		if _, numVal, isNumber := parseToken(token, tokens, &i); isNumber {
+			result = append(result, DetectedNumber{Number: numVal})
 		}
 	}
-
-	return result.String(), numbers
+	return result
 }
 
 // preprocessConjunctions handles concatenated conjunctions

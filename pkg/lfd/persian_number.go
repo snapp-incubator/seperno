@@ -71,7 +71,6 @@ func (f *PersianNumberDetector) DetectNumbers(text string) []DetectedNumber {
 }
 
 func tokenizeWithPositions(input string) []Token {
-	//runes := []rune(input)
 	matches := tokenRegex.FindAllStringSubmatch(input, -1)
 	indexes := tokenRegex.FindAllStringIndex(input, -1)
 
@@ -154,7 +153,6 @@ func parseCompoundNumberWithPositions(initial int64, startToken Token, tokens []
 			total *= mult
 			pos = next
 			endIdx = token.EndIndex
-			next++
 			continue
 		}
 
@@ -163,7 +161,6 @@ func parseCompoundNumberWithPositions(initial int64, startToken Token, tokens []
 			total *= 100
 			pos = next
 			endIdx = token.EndIndex
-			next++
 			continue
 		}
 

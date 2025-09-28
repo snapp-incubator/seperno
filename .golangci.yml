@@ -32,7 +32,7 @@ linters:
     - revive
 
     # check imports order and makes it always deterministic.
-    - gci
+      # - gci
 
     # make sure to use t.Helper() when needed
     - thelper

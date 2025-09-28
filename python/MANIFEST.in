@@ -1,0 +1,2 @@
+include seperno/linux/seperno.so
+include seperno/macos/seperno.dylib

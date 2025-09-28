@@ -1,6 +1,8 @@
 package seperno
 
 import (
+	"C"
+
 	"github.com/snapp-incubator/seperno/internal"
 	"github.com/snapp-incubator/seperno/pkg/options"
 )

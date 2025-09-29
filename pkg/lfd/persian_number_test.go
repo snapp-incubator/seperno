@@ -287,6 +287,70 @@ func TestConvertWordsToIntFa(t *testing.T) {
 			expected: "410",
 			numbers:  []DetectedNumber{{Number: 410, StartIndex: 0, EndIndex: 11}},
 		},
+
+		// dictation
+		{
+			name:     "dictation",
+			input:    "هزار و چارصد",
+			expected: "1400",
+			numbers:  []DetectedNumber{{Number: 1400, StartIndex: 0, EndIndex: 11}},
+		},
+		{
+			name:     "compound_dictation",
+			input:    "هزار و پونصد شونصد تا",
+			expected: "1500 600 تا",
+			numbers:  []DetectedNumber{{Number: 1500, StartIndex: 0, EndIndex: 11}, {Number: 600, StartIndex: 13, EndIndex: 17}},
+		},
+
+		// Character normalization test cases
+		{
+			name:     "persian_digits_normalization",
+			input:    "پلاک ۱۲۳",
+			expected: "پلاک 123",
+			numbers:  []DetectedNumber{{Number: 123, StartIndex: 5, EndIndex: 7}},
+		},
+		{
+			name:     "arabic_indic_digits",
+			input:    "شماره ٢٣٤٥",
+			expected: "شماره 2345",
+			numbers:  []DetectedNumber{{Number: 2345, StartIndex: 6, EndIndex: 9}},
+		},
+		{
+			name:     "mixed_digit_systems",
+			input:    "کد ۱٢3٤",
+			expected: "کد 1234",
+			numbers:  []DetectedNumber{{Number: 1234, StartIndex: 3, EndIndex: 6}},
+		},
+		{
+			name:     "half_space_normalization",
+			input:    "خیابان‌بیست‌و‌سه",
+			expected: "خیابان 23",
+			numbers:  []DetectedNumber{{Number: 23, StartIndex: 7, EndIndex: 15}},
+		},
+		{
+			name:     "zero_width_non_joiner",
+			input:    "پلاک‌صد‌و‌بیست",
+			expected: "پلاک 120",
+			numbers:  []DetectedNumber{{Number: 120, StartIndex: 5, EndIndex: 13}},
+		},
+		{
+			name:     "arabic_yeh_normalization",
+			input:    "خيابان بيست",
+			expected: "خیابان 20",
+			numbers:  []DetectedNumber{{Number: 20, StartIndex: 7, EndIndex: 10}},
+		},
+		{
+			name:     "arabic_keh_normalization",
+			input:    "كوچه پنج",
+			expected: "کوچه 5",
+			numbers:  []DetectedNumber{{Number: 5, StartIndex: 5, EndIndex: 7}},
+		},
+		{
+			name:     "multiple_whitespace_types",
+			input:    "شماره ۱۲ ‌ سه",
+			expected: "شماره 12 3",
+			numbers:  []DetectedNumber{{Number: 12, StartIndex: 6, EndIndex: 7}, {Number: 3, StartIndex: 11, EndIndex: 12}},
+		},
 	}
 
 	detector := &PersianNumberDetector{}
@@ -300,6 +364,9 @@ func TestConvertWordsToIntFa(t *testing.T) {
 	}
 }
 
+// TestProcessTokensToNumbers tests the processTokensToNumbers function.
+// This test assumes that input characters are already normalized and
+// Persian digit characters are converted to their English equivalents.
 func TestProcessTokensToNumbers(t *testing.T) {
 	tests := []struct {
 		name                 string
@@ -335,11 +402,27 @@ func TestProcessTokensToNumbers(t *testing.T) {
 		{
 			name: "single_digit",
 			tokens: []Token{
-				{Value: "۵", StartIndex: 0, EndIndex: 0},
+				{Value: "5", StartIndex: 0, EndIndex: 0},
 			},
 			addedSpacesPSumArray: []int{0},
 			expected: []DetectedNumber{
 				{Number: 5, StartIndex: 0, EndIndex: 0},
+			},
+		},
+		{
+			name: "mixed_persian_arabic_digits_and_words",
+			tokens: []Token{
+				{Value: "43", StartIndex: 0, EndIndex: 1},
+				{Value: " ", StartIndex: 2, EndIndex: 2},
+				{Value: "22", StartIndex: 3, EndIndex: 4},
+				{Value: " ", StartIndex: 5, EndIndex: 5},
+				{Value: "هفتاد", StartIndex: 6, EndIndex: 9},
+			},
+			addedSpacesPSumArray: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+			expected: []DetectedNumber{
+				{Number: 43, StartIndex: 0, EndIndex: 1},
+				{Number: 22, StartIndex: 3, EndIndex: 4},
+				{Number: 70, StartIndex: 6, EndIndex: 9},
 			},
 		},
 		{

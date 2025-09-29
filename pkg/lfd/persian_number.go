@@ -1,10 +1,14 @@
 package lfd
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/snapp-incubator/seperno/internal"
+	"github.com/snapp-incubator/seperno/pkg/options"
 )
 
 // DetectedNumber word mappings
@@ -16,8 +20,8 @@ var (
 		"شانزده": 16, "هفده": 17, "هجده": 18, "نوزده": 19,
 		"بیست": 20, "سی": 30, "چهل": 40, "پنجاه": 50, "شصت": 60,
 		"هفتاد": 70, "هشتاد": 80, "نود": 90,
-		"صد": 100, "یکصد": 100, "دویست": 200, "سیصد": 300, "چهارصد": 400,
-		"پانصد": 500, "ششصد": 600, "هفتصد": 700, "هشتصد": 800, "نهصد": 900,
+		"صد": 100, "یکصد": 100, "دویست": 200, "سیصد": 300, "چهارصد": 400, "چارصد": 400,
+		"پانصد": 500, "پونصد": 500, "ششصد": 600, "شونصد": 600, "هفتصد": 700, "هشتصد": 800, "نهصد": 900,
 		"هزار": 1000,
 	}
 
@@ -47,7 +51,11 @@ func (f *PersianNumberDetector) DetectNumbers(text string) []DetectedNumber {
 		return []DetectedNumber{}
 	}
 
-	preprocessed, addedSpacesPSumArray := preprocessConjunctions(text)
+	normalizer := internal.NewNormalizer(options.DefaultOptions)
+	normalizedCharacters := normalizer.NormalizeCharacters(text)
+	fmt.Println("original:", text)
+	fmt.Println("normalized:", string(normalizedCharacters))
+	preprocessed, addedSpacesPSumArray := preprocessConjunctions(string(normalizedCharacters))
 	tokens := tokenizeWithPositions(preprocessed)
 
 	return processTokensToNumbers(tokens, addedSpacesPSumArray)
@@ -265,9 +273,7 @@ func parseDigits(s string) (int64, bool) {
 	if !isNumeric(s) {
 		return 0, false
 	}
-
-	normalized := normalizeDigits(s)
-	val, err := strconv.ParseInt(normalized, 10, 64)
+	val, err := strconv.ParseInt(s, 10, 64)
 	return val, err == nil
 }
 
@@ -313,19 +319,4 @@ func isNumeric(s string) bool {
 		}
 	}
 	return true
-}
-
-func normalizeDigits(s string) string {
-	var result strings.Builder
-	result.Grow(len(s))
-
-	for _, r := range s {
-		if r >= '۰' && r <= '۹' {
-			result.WriteRune('0' + (r - '۰'))
-		} else {
-			result.WriteRune(r)
-		}
-	}
-
-	return result.String()
 }

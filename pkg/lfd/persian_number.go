@@ -50,6 +50,11 @@ func (f *PersianNumberDetector) DetectNumbers(text string) []DetectedNumber {
 	preprocessed, addedSpacesPSumArray := preprocessConjunctions(text)
 	tokens := tokenizeWithPositions(preprocessed)
 
+	return processTokensToNumbers(tokens, addedSpacesPSumArray)
+}
+
+// processTokensToNumbers processes tokens and converts detected numbers to DetectedNumber structs
+func processTokensToNumbers(tokens []Token, addedSpacesPSumArray []int) []DetectedNumber {
 	result := make([]DetectedNumber, 0)
 	for i := 0; i < len(tokens); i++ {
 		token := tokens[i]
@@ -59,7 +64,6 @@ func (f *PersianNumberDetector) DetectNumbers(text string) []DetectedNumber {
 		}
 
 		if _, numVal, startIdx, endIdx, isNumber := parseTokenWithPositions(token, tokens, &i); isNumber {
-
 			result = append(result, DetectedNumber{
 				Number:     numVal,
 				StartIndex: startIdx - addedSpacesPSumArray[startIdx],

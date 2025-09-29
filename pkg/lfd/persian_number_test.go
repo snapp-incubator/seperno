@@ -300,6 +300,132 @@ func TestConvertWordsToIntFa(t *testing.T) {
 	}
 }
 
+func TestProcessTokensToNumbers(t *testing.T) {
+	tests := []struct {
+		name                 string
+		tokens               []Token
+		addedSpacesPSumArray []int
+		expected             []DetectedNumber
+	}{
+		{
+			name:                 "empty_tokens",
+			tokens:               []Token{},
+			addedSpacesPSumArray: []int{},
+			expected:             []DetectedNumber{},
+		},
+		{
+			name: "whitespace_only",
+			tokens: []Token{
+				{Value: " ", StartIndex: 0, EndIndex: 0},
+				{Value: "  ", StartIndex: 1, EndIndex: 2},
+			},
+			addedSpacesPSumArray: []int{0, 0, 0},
+			expected:             []DetectedNumber{},
+		},
+		{
+			name: "single_number_word",
+			tokens: []Token{
+				{Value: "سه", StartIndex: 0, EndIndex: 1},
+			},
+			addedSpacesPSumArray: []int{0, 0},
+			expected: []DetectedNumber{
+				{Number: 3, StartIndex: 0, EndIndex: 1},
+			},
+		},
+		{
+			name: "single_digit",
+			tokens: []Token{
+				{Value: "۵", StartIndex: 0, EndIndex: 0},
+			},
+			addedSpacesPSumArray: []int{0},
+			expected: []DetectedNumber{
+				{Number: 5, StartIndex: 0, EndIndex: 0},
+			},
+		},
+		{
+			name: "compound_number_with_conjunction",
+			tokens: []Token{
+				{Value: "بیست", StartIndex: 0, EndIndex: 3},
+				{Value: " ", StartIndex: 4, EndIndex: 4},
+				{Value: "و", StartIndex: 5, EndIndex: 5},
+				{Value: " ", StartIndex: 6, EndIndex: 6},
+				{Value: "سه", StartIndex: 7, EndIndex: 8},
+			},
+			addedSpacesPSumArray: []int{0, 0, 0, 0, 0, 0, 0, 0, 0},
+			expected: []DetectedNumber{
+				{Number: 23, StartIndex: 0, EndIndex: 8},
+			},
+		},
+		{
+			name: "multiple_separate_numbers",
+			tokens: []Token{
+				{Value: "خیابان", StartIndex: 0, EndIndex: 5},
+				{Value: " ", StartIndex: 6, EndIndex: 6},
+				{Value: "پنج", StartIndex: 7, EndIndex: 9},
+				{Value: " ", StartIndex: 10, EndIndex: 10},
+				{Value: "پلاک", StartIndex: 11, EndIndex: 14},
+				{Value: " ", StartIndex: 15, EndIndex: 15},
+				{Value: "ده", StartIndex: 16, EndIndex: 17},
+			},
+			addedSpacesPSumArray: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+			expected: []DetectedNumber{
+				{Number: 5, StartIndex: 7, EndIndex: 9},
+				{Number: 10, StartIndex: 16, EndIndex: 17},
+			},
+		},
+		{
+			name: "with_added_spaces_adjustment",
+			tokens: []Token{
+				{Value: "بیست", StartIndex: 0, EndIndex: 3},
+				{Value: " ", StartIndex: 4, EndIndex: 4},
+				{Value: "و", StartIndex: 5, EndIndex: 5},
+				{Value: " ", StartIndex: 6, EndIndex: 6},
+				{Value: "سه", StartIndex: 7, EndIndex: 8},
+			},
+			addedSpacesPSumArray: []int{0, 0, 0, 0, 1, 1, 2, 2, 2}, // 2 spaces were added during preprocessing
+			expected: []DetectedNumber{
+				{Number: 23, StartIndex: 0, EndIndex: 6}, // EndIndex adjusted: 8 - 2 = 6
+			},
+		},
+		{
+			name: "ordinal_numbers",
+			tokens: []Token{
+				{Value: "اول", StartIndex: 0, EndIndex: 2},
+				{Value: " ", StartIndex: 3, EndIndex: 3},
+				{Value: "دومین", StartIndex: 4, EndIndex: 7},
+			},
+			addedSpacesPSumArray: []int{0, 0, 0, 0, 0, 0, 0, 0},
+			expected: []DetectedNumber{
+				{Number: 1, StartIndex: 0, EndIndex: 2},
+				{Number: 2, StartIndex: 4, EndIndex: 7},
+			},
+		},
+		{
+			name: "mixed_words_and_non_numbers",
+			tokens: []Token{
+				{Value: "خیابان", StartIndex: 0, EndIndex: 5},
+				{Value: " ", StartIndex: 6, EndIndex: 6},
+				{Value: "بیست", StartIndex: 7, EndIndex: 10},
+				{Value: " ", StartIndex: 11, EndIndex: 11},
+				{Value: "نام", StartIndex: 12, EndIndex: 14},
+			},
+			addedSpacesPSumArray: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+			expected: []DetectedNumber{
+				{Number: 20, StartIndex: 7, EndIndex: 10},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := processTokensToNumbers(tt.tokens, tt.addedSpacesPSumArray)
+			if !reflect.DeepEqual(result, tt.expected) {
+				t.Errorf("processTokensToNumbers() = %v, want %v", result, tt.expected)
+			}
+		})
+	}
+}
+
 func BenchmarkPersianNumberDetector(b *testing.B) {
 	detector := &PersianNumberDetector{}
 

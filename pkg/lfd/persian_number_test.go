@@ -56,6 +56,12 @@ func TestConvertWordsToIntFa(t *testing.T) {
 			expected: "خیابان شماره 9",
 			numbers:  []DetectedNumber{{Number: 9, StartIndex: 13, EndIndex: 14}},
 		},
+		{
+			name:     "multiple_ordinals",
+			input:    "این اولین و دومین تست است",
+			expected: "این 1 و 2 تست است",
+			numbers:  []DetectedNumber{{Number: 1, StartIndex: 4, EndIndex: 8}, {Number: 2, StartIndex: 12, EndIndex: 16}},
+		},
 
 		// Teens
 		{
@@ -109,6 +115,18 @@ func TestConvertWordsToIntFa(t *testing.T) {
 			input:    "پلاک چهل و هفت",
 			expected: "پلاک 47",
 			numbers:  []DetectedNumber{{Number: 47, StartIndex: 5, EndIndex: 13}},
+		},
+		{
+			name:     "compound_ordinal_twenty_fifth",
+			input:    "بیست و پنجم نمایشگاه آفرود",
+			expected: "25 نمایشگاه آفرود",
+			numbers:  []DetectedNumber{{Number: 25, StartIndex: 0, EndIndex: 10}},
+		},
+		{
+			name:     "compound_ordinal_with_suffix",
+			input:    "بیست و پنجمین نمایشگاه آفرود",
+			expected: "25 نمایشگاه آفرود",
+			numbers:  []DetectedNumber{{Number: 25, StartIndex: 0, EndIndex: 12}},
 		},
 
 		// Addresses with multiple numbers
@@ -268,24 +286,6 @@ func TestConvertWordsToIntFa(t *testing.T) {
 			input:    "چهار صد و ده",
 			expected: "410",
 			numbers:  []DetectedNumber{{Number: 410, StartIndex: 0, EndIndex: 11}},
-		},
-		{
-			name:     "compound_ordinal_twenty_fifth",
-			input:    "بیست و پنجم نمایشگاه آفرود",
-			expected: "25 نمایشگاه آفرود",
-			numbers:  []DetectedNumber{{Number: 25, StartIndex: 0, EndIndex: 10}},
-		},
-		{
-			name:     "compound_ordinal_with_suffix",
-			input:    "بیست و پنجمین نمایشگاه آفرود",
-			expected: "25 نمایشگاه آفرود",
-			numbers:  []DetectedNumber{{Number: 25, StartIndex: 0, EndIndex: 12}},
-		},
-		{
-			name:     "multiple_ordinals",
-			input:    "این اولین و دومین تست است",
-			expected: "این 1 و 2 تست است",
-			numbers:  []DetectedNumber{{Number: 1, StartIndex: 4, EndIndex: 8}, {Number: 2, StartIndex: 12, EndIndex: 16}},
 		},
 	}
 

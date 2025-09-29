@@ -29,8 +29,8 @@ var (
 	multipliers     = map[string]int64{"صد": 100, "هزار": 1000}
 
 	// Compiled regexes
-	lettersRegex = regexp.MustCompile(`^[\p{L}]+$`)
-	tokenRegex   = regexp.MustCompile(`([\p{L}]+|[\p{N}]+|\s+)`)
+	lettersRegex = regexp.MustCompile(`^[\p{L}]+$`)              // Matches strings containing Unicode letters (for Persian word validation)
+	tokenRegex   = regexp.MustCompile(`([\p{L}]+|[\p{N}]+|\s+)`) // Splits text into tokens: letter sequences, number sequences, or whitespace
 )
 
 type Token struct {

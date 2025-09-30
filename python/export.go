@@ -2,10 +2,14 @@ package main
 
 /*
 #include <stdbool.h>
+#include <stdlib.h>
 */
 import "C"
 import (
+	"unsafe"
+
 	"github.com/snapp-incubator/seperno/internal"
+	"github.com/snapp-incubator/seperno/pkg/lfd"
 	"github.com/snapp-incubator/seperno/pkg/options"
 )
 
@@ -31,6 +35,41 @@ func NormalizeText(input *C.char, convertHalfSpace C.bool, combineSpace C.bool, 
 	// Call the appropriate normalization method
 	result := normalizer.BasicNormalizer(C.GoString(input))
 	return C.CString(result)
+}
+
+//export DetectPersianNumbers
+func DetectPersianNumbers(input *C.char, outNums **C.longlong, outStarts **C.int, outEnds **C.int, outLen *C.int) {
+	// Convert C string -> Go string
+	goInput := C.GoString(input)
+
+	// Run your detector
+	finder := &lfd.PersianNumberDetector{}
+	numbers := finder.DetectNumbers(goInput)
+
+	n := len(numbers)
+	*outLen = C.int(n)
+
+	// Allocate memory for C arrays
+	nums := (*C.longlong)(C.malloc(C.size_t(n) * C.size_t(unsafe.Sizeof(C.longlong(0)))))
+	starts := (*C.int)(C.malloc(C.size_t(n) * C.size_t(unsafe.Sizeof(C.int(0)))))
+	ends := (*C.int)(C.malloc(C.size_t(n) * C.size_t(unsafe.Sizeof(C.int(0)))))
+
+	// Convert to Go slices backed by C memory
+	numsSlice := unsafe.Slice(nums, n)
+	startsSlice := unsafe.Slice(starts, n)
+	endsSlice := unsafe.Slice(ends, n)
+
+	// Fill arrays
+	for i, number := range numbers {
+		numsSlice[i] = C.longlong(number.Number)
+		startsSlice[i] = C.int(number.StartIndex)
+		endsSlice[i] = C.int(number.EndIndex)
+	}
+
+	// Set return pointers
+	*outNums = nums
+	*outStarts = starts
+	*outEnds = ends
 }
 
 func main() {}

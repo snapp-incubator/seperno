@@ -101,7 +101,7 @@ func (n Normalize) BasicNormalizer(input string) string {
 	// Apply SpaceNormalizer
 	input = n.spaceNormalizer(input)
 
-	inputRunes := n.normalizeCharacters(input)
+	inputRunes := n.NormalizeCharacters(input)
 	// Convert runes back to a string
 	// Convert the rune slice back to a string, trim spaces, replace null strings, and convert to lowercase
 	s := strings.TrimSpace(string(inputRunes))
@@ -131,7 +131,7 @@ func (n Normalize) BasicNormalizer(input string) string {
 	return stringInput
 }
 
-func (n Normalize) normalizeCharacters(input string) []rune {
+func (n Normalize) NormalizeCharacters(input string) []rune {
 	// Convert input to a rune slice for character-by-character processing
 	inputRunes := []rune(input)
 

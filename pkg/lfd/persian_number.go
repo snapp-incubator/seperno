@@ -1,7 +1,6 @@
 package lfd
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -53,8 +52,6 @@ func (f *PersianNumberDetector) DetectNumbers(text string) []DetectedNumber {
 
 	normalizer := internal.NewNormalizer(options.DefaultOptions)
 	normalizedCharacters := normalizer.NormalizeCharacters(text)
-	fmt.Println("original:", text)
-	fmt.Println("normalized:", string(normalizedCharacters))
 	preprocessed, addedSpacesPSumArray := preprocessConjunctions(string(normalizedCharacters))
 	tokens := tokenizeWithPositions(preprocessed)
 

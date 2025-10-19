@@ -49,6 +49,13 @@ func DetectPersianNumbers(input *C.char, outNums **C.longlong, outStarts **C.int
 	n := len(numbers)
 	*outLen = C.int(n)
 
+	if n == 0 {
+		*outNums = nil
+		*outStarts = nil
+		*outEnds = nil
+		return
+	}
+
 	// Allocate memory for C arrays
 	nums := (*C.longlong)(C.malloc(C.size_t(n) * C.size_t(unsafe.Sizeof(C.longlong(0)))))
 	starts := (*C.int)(C.malloc(C.size_t(n) * C.size_t(unsafe.Sizeof(C.int(0)))))

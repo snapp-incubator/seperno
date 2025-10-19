@@ -70,40 +70,56 @@ seperno.DetectPersianNumbers.restype = None   # it returns void
 
 def detect_persian_numbers(input_text):
     """Python wrapper for the Go-based Persian number detector."""
+    import threading
+    
+    # Use a lock to prevent concurrent access issues
+    if not hasattr(detect_persian_numbers, '_lock'):
+        detect_persian_numbers._lock = threading.Lock()
+    
+    with detect_persian_numbers._lock:
+        # Prepare output pointers
+        nums_ptr = ctypes.POINTER(ctypes.c_longlong)()
+        starts_ptr = ctypes.POINTER(ctypes.c_int)()
+        ends_ptr = ctypes.POINTER(ctypes.c_int)()
+        length = ctypes.c_int()
 
-    # Prepare output pointers
-    nums_ptr = ctypes.POINTER(ctypes.c_longlong)()
-    starts_ptr = ctypes.POINTER(ctypes.c_int)()
-    ends_ptr = ctypes.POINTER(ctypes.c_int)()
-    length = ctypes.c_int()
+        try:
+            # Call the CGo function - this will release GIL automatically for C calls
+            seperno.DetectPersianNumbers(
+                input_text.encode("utf-8"),
+                ctypes.byref(nums_ptr),
+                ctypes.byref(starts_ptr),
+                ctypes.byref(ends_ptr),
+                ctypes.byref(length)
+            )
 
-    # Call the CGo function
-    seperno.DetectPersianNumbers(
-        input_text.encode("utf-8"),
-        ctypes.byref(nums_ptr),
-        ctypes.byref(starts_ptr),
-        ctypes.byref(ends_ptr),
-        ctypes.byref(length)
-    )
+            n = length.value
+            
+            if n == 0:
+                return []
 
-    n = length.value
+            # Convert C arrays into Python lists
+            values = [nums_ptr[i] for i in range(n)]
+            start_indices = [starts_ptr[i] for i in range(n)]
+            end_indices = [ends_ptr[i] for i in range(n)]
 
-    # Convert C arrays into Python lists
-    values = [nums_ptr[i] for i in range(n)]
-    start_indices = [starts_ptr[i] for i in range(n)]
-    end_indices = [ends_ptr[i] for i in range(n)]
-
-    # Important: free the memory allocated in Go (using libc free)
-    libc = ctypes.CDLL("libc.so.6" if system == "Linux" else "libc.dylib")
-    libc.free(nums_ptr)
-    libc.free(starts_ptr)
-    libc.free(ends_ptr)
-
-    return [
-        {
-            "value": values[i],
-            "start_index": start_indices[i],
-            "end_index": end_indices[i],
-        }
-        for i in range(n)
-    ]
+            return [
+                {
+                    "value": values[i],
+                    "start_index": start_indices[i],
+                    "end_index": end_indices[i],
+                }
+                for i in range(n)
+            ]
+        
+        finally:
+            # Always free memory, even if an exception occurs
+            if nums_ptr:
+                # Use libc free for memory cleanup
+                try:
+                    libc = ctypes.CDLL("libc.so.6" if system == "Linux" else "libc.dylib")
+                    libc.free(nums_ptr)
+                    libc.free(starts_ptr)
+                    libc.free(ends_ptr)
+                except:
+                    pass  # Ignore cleanup errors to prevent masking original errors

@@ -40,17 +40,48 @@ def normalize_text(
     number_language="en"
 ):
     """Python wrapper for the Go-based text normalizer."""
-    return seperno.NormalizeText(
-        text.encode("utf-8"),
-        ctypes.c_bool(convert_half_space),
-        ctypes.c_bool(combine_space),
-        ctypes.c_bool(remove_outer_space),
-        ctypes.c_bool(remove_url),
-        ctypes.c_bool(normalize_punctuations),
-        ctypes.c_bool(end_with_eol),
-        ctypes.c_bool(int_to_word),
-        number_language.encode("utf-8"),
-    ).decode("utf-8")
+    import threading
+    
+    # Use a lock to prevent concurrent access issues
+    if not hasattr(normalize_text, '_lock'):
+        normalize_text._lock = threading.Lock()
+    
+    with normalize_text._lock:
+        result_ptr = None
+        try:
+            result_ptr = seperno.NormalizeText(
+                text.encode("utf-8"),
+                ctypes.c_bool(convert_half_space),
+                ctypes.c_bool(combine_space),
+                ctypes.c_bool(remove_outer_space),
+                ctypes.c_bool(remove_url),
+                ctypes.c_bool(normalize_punctuations),
+                ctypes.c_bool(end_with_eol),
+                ctypes.c_bool(int_to_word),
+                number_language.encode("utf-8"),
+            )
+            
+            if result_ptr:
+                # Convert C string to Python string
+                result = ctypes.string_at(result_ptr).decode("utf-8")
+                return result
+            else:
+                return ""
+                
+        except Exception as e:
+            # Log the error and return the original text as fallback
+            import logging
+            logging.error(f"Error in normalize_text: {e}")
+            return text
+            
+        finally:
+            # Always free the memory allocated by C.CString in Go
+            if result_ptr:
+                try:
+                    libc = ctypes.CDLL("libc.so.6" if system == "Linux" else "libc.dylib")
+                    libc.free(result_ptr)
+                except:
+                    pass  # Ignore cleanup errors to prevent masking original errors
 
 
 # -------- DetectPersianNumbers binding --------
@@ -63,7 +94,7 @@ seperno.DetectPersianNumbers.argtypes = [
     ctypes.POINTER(ctypes.POINTER(ctypes.c_longlong)),  # **outNums
     ctypes.POINTER(ctypes.POINTER(ctypes.c_int)),       # **outStarts
     ctypes.POINTER(ctypes.POINTER(ctypes.c_int)),       # **outEnds
-    ctypes.POINTER(ctypes.c_int)            # *outLen
+    ctypes.POINTER(ctypes.c_int)                        # *outLen
 ]
 seperno.DetectPersianNumbers.restype = None   # it returns void
 

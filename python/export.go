@@ -3,6 +3,7 @@ package main
 /*
 #include <stdbool.h>
 #include <stdlib.h>
+#include <string.h>
 */
 import "C"
 import (

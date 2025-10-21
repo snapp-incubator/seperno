@@ -47,9 +47,9 @@ def normalize_text(
         normalize_text._lock = threading.Lock()
     
     with normalize_text._lock:
-        result_ptr = None
         try:
-            result_ptr = seperno.NormalizeText(
+            # Call the CGo function and let ctypes handle the memory automatically
+            result = seperno.NormalizeText(
                 text.encode("utf-8"),
                 ctypes.c_bool(convert_half_space),
                 ctypes.c_bool(combine_space),
@@ -61,10 +61,9 @@ def normalize_text(
                 number_language.encode("utf-8"),
             )
             
-            if result_ptr:
-                # Convert C string to Python string
-                result = ctypes.string_at(result_ptr).decode("utf-8")
-                return result
+            if result:
+                # ctypes automatically handles C string conversion and cleanup
+                return result.decode("utf-8")
             else:
                 return ""
                 
@@ -73,15 +72,6 @@ def normalize_text(
             import logging
             logging.error(f"Error in normalize_text: {e}")
             return text
-            
-        finally:
-            # Always free the memory allocated by C.CString in Go
-            if result_ptr:
-                try:
-                    libc = ctypes.CDLL("libc.so.6" if system == "Linux" else "libc.dylib")
-                    libc.free(result_ptr)
-                except:
-                    pass  # Ignore cleanup errors to prevent masking original errors
 
 
 # -------- DetectPersianNumbers binding --------

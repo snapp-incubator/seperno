@@ -17,7 +17,7 @@ if not os.path.exists(lib_path):
 
 setup(
     name="seperno",
-    version="1.4.3",
+    version="1.4.4",
     author="Sepehr Sohrabpour",
     author_email="sepehrxsohrabpour@gmail.com",
     description="Python wrapper for Go-based Seperno text normalization",

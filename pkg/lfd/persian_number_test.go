@@ -323,13 +323,13 @@ func TestConvertWordsToIntFa(t *testing.T) {
 		},
 		{
 			name:     "half_space_normalization",
-			input:    "خیابان‌بیست‌و‌سه",
+			input:    "خیابان\u200cبیست\u200cو\u200cسه",
 			expected: "خیابان 23",
 			numbers:  []DetectedNumber{{Number: 23, StartIndex: 7, EndIndex: 15}},
 		},
 		{
 			name:     "zero_width_non_joiner",
-			input:    "پلاک‌صد‌و‌بیست",
+			input:    "پلاک\u200cصد\u200cو\u200cبیست",
 			expected: "پلاک 120",
 			numbers:  []DetectedNumber{{Number: 120, StartIndex: 5, EndIndex: 13}},
 		},
@@ -347,7 +347,7 @@ func TestConvertWordsToIntFa(t *testing.T) {
 		},
 		{
 			name:     "multiple_whitespace_types",
-			input:    "شماره ۱۲ ‌ سه",
+			input:    "شماره ۱۲ \u200c سه",
 			expected: "شماره 12 3",
 			numbers:  []DetectedNumber{{Number: 12, StartIndex: 6, EndIndex: 7}, {Number: 3, StartIndex: 11, EndIndex: 12}},
 		},

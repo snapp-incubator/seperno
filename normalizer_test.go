@@ -19,7 +19,7 @@ func TestNormalize_BasicNormalizer(t *testing.T) {
 		{
 			name: "should convert half space into space",
 			args: args{
-				input: "آسمان‌آبی",
+				input: "آسمان\u200cآبی",
 				ops:   []options.Options{WithConvertHalfSpaceToSpace()},
 			},
 			want: "اسمان ابی",

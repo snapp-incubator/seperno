@@ -20,7 +20,7 @@ func TestNormalize_BasicNormalizer(t *testing.T) {
 		{
 			name: "should convert half space into space",
 			args: args{
-				input:                   "آ‌س",
+				input:                   "آ\u200cس",
 				convertHalfSpaceToSpace: true,
 			},
 			want: "ا س",
@@ -28,10 +28,10 @@ func TestNormalize_BasicNormalizer(t *testing.T) {
 		{
 			name: "should keep half space",
 			args: args{
-				input:                   "آ‌س",
+				input:                   "آ\u200cس",
 				convertHalfSpaceToSpace: false,
 			},
-			want: "ا‌س",
+			want: "ا\u200cس",
 		},
 		{
 			name: "should combine spaces",
@@ -61,7 +61,7 @@ func TestNormalize_BasicNormalizer(t *testing.T) {
 		{
 			name: "should remove combining characters",
 			args: args{
-				input:                   "ب‍",
+				input:                   "ب\u200d",
 				convertHalfSpaceToSpace: true,
 			},
 			want: "ب",
